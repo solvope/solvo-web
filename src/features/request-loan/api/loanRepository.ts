@@ -35,4 +35,9 @@ export const loanRepository = {
     const { data } = await apiClient.get(`/loans/${loanId}/contract`)
     return data.data.url
   },
+
+  async chargeCard(dto: { loanId: string; amount: number; culqiToken: string }): Promise<Payment> {
+    const { data } = await apiClient.post('/payments/charge', dto)
+    return data.data
+  },
 }

@@ -5,10 +5,11 @@ export const LOAN_STATUS_LABELS: Record<string, string> = {
 }
 
 export const PAYMENT_METHODS = [
-  { value: 'YAPE', label: 'Yape', icon: '📱' },
-  { value: 'PLIN', label: 'Plin', icon: '📲' },
-  { value: 'BANK_TRANSFER', label: 'Transferencia', icon: '🏦' },
-  { value: 'CASH', label: 'Efectivo', icon: '💵' },
+  { value: 'CARD',          label: 'Tarjeta',       icon: '💳' },
+  { value: 'YAPE',          label: 'Yape',           icon: '📱' },
+  { value: 'PLIN',          label: 'Plin',           icon: '📲' },
+  { value: 'BANK_TRANSFER', label: 'Transferencia',  icon: '🏦' },
+  { value: 'CASH',          label: 'Efectivo',       icon: '💵' },
 ] as const
 
 export const TOKEN_KEY = 'solvo_token'

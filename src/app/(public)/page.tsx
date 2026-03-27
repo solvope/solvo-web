@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Shield, Zap, Clock } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import { LoanSimulator } from '@/features/simulator/ui/LoanSimulator'
 
 export default function LandingPage() {
   return (
@@ -68,6 +69,17 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Simulador */}
+      <section className="mx-auto max-w-5xl px-4 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-3">Simula tu préstamo</h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Calcula cuánto pagarías antes de solicitar. Sin compromiso, sin registro.
+          </p>
+        </div>
+        <LoanSimulator />
+      </section>
+
       {/* CTA */}
       <section className="bg-primary/5 border-y">
         <div className="mx-auto max-w-5xl px-4 py-16 text-center">
@@ -80,7 +92,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        <p>© 2025 Solvo. Todos los derechos reservados.</p>
+        <p>© 2026 Solvo. Todos los derechos reservados.</p>
       </footer>
     </main>
   )

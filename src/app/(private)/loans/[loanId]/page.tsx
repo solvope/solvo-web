@@ -1,13 +1,11 @@
 'use client'
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FileSignature, CreditCard, Download } from 'lucide-react'
 import { toast } from 'sonner'
-import { useLoanStore } from '@/features/request-loan'
-import { loanRepository } from '@/features/request-loan'
-import { LoanStatusBadge } from '@/entities/loan'
-import { canSign, isActiveLoan, canPay } from '@/entities/loan'
+import { useLoanStore, loanRepository } from '@/features/request-loan'
+import { canSign, isActiveLoan, canPay, LoanStatusBadge } from '@/entities/loan'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -16,7 +14,6 @@ import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/utils'
 
 export default function LoanDetailPage() {
   const { loanId } = useParams<{ loanId: string }>()
-  const router = useRouter()
   const { selectedLoan: loan, balance, payments, isLoading, loadLoanDetails, signLoan } = useLoanStore()
 
   useEffect(() => { loadLoanDetails(loanId) }, [loanId, loadLoanDetails])
@@ -69,7 +66,7 @@ export default function LoanDetailPage() {
           <div className="flex justify-between"><span className="text-muted-foreground">Monto</span><span className="font-semibold">{formatCurrency(loan.amount)}</span></div>
           <Separator />
           <div className="flex justify-between"><span className="text-muted-foreground">Plazo</span><span>{loan.termDays} días</span></div>
-<div className="flex justify-between"><span className="text-muted-foreground">Solicitado</span><span>{formatDate(loan.createdAt)}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Solicitado</span><span>{formatDate(loan.createdAt)}</span></div>
           {loan.dueDate && (
             <div className="flex justify-between"><span className="text-muted-foreground">Fecha de vencimiento</span><span>{formatDate(loan.dueDate)}</span></div>
           )}

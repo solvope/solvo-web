@@ -18,7 +18,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadMyLoans()
-    kycRepository.getStatus().then(s => setKycApproved(s.isIdentityVerified)).catch(() => {})
+    kycRepository.getStatus().then(s => setKycApproved(s.isIdentityVerified)).catch(() => { })
   }, [loadMyLoans])
 
   const recentLoans = loans.slice(0, 5)

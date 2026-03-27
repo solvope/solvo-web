@@ -8,7 +8,7 @@ export const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
+  if (typeof globalThis.window) {
     const token = localStorage.getItem(TOKEN_KEY)
     if (token) config.headers.Authorization = `Bearer ${token}`
   }
@@ -18,9 +18,9 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (r) => r,
   (error) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    if (error.response?.status === 401 && typeof globalThis.window) {
       localStorage.removeItem(TOKEN_KEY)
-      window.location.href = '/login'
+      globalThis.location.href = '/login'
     }
     return Promise.reject(error)
   }

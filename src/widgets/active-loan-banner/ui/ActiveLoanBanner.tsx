@@ -8,7 +8,7 @@ interface Props {
   loan: Loan
 }
 
-export function ActiveLoanBanner({ loan }: Props) {
+export function ActiveLoanBanner({ loan }: Readonly<Props>) {
   const isOverdue = loan.status === 'OVERDUE'
 
   return (

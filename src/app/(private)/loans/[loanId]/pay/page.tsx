@@ -7,8 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { ArrowLeft, Loader2, CreditCard, Smartphone } from 'lucide-react'
-import { useLoanStore } from '@/features/request-loan'
-import { loanRepository } from '@/features/request-loan'
+import { loanRepository, useLoanStore } from '@/features/request-loan'
 import { useAuthStore } from '@/features/auth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
@@ -19,17 +18,17 @@ import { Separator } from '@/shared/ui/separator'
 import { formatCurrency } from '@/shared/lib/utils'
 
 const manualSchema = z.object({
-  amount:    z.number({ invalid_type_error: 'Ingresa un monto' }).positive('Debe ser mayor a 0'),
-  method:    z.enum(['YAPE', 'PLIN', 'BANK_TRANSFER', 'CASH'], { required_error: 'Selecciona un método' }),
+  amount: z.number({ invalid_type_error: 'Ingresa un monto' }).positive('Debe ser mayor a 0'),
+  method: z.enum(['YAPE', 'PLIN', 'BANK_TRANSFER', 'CASH'], { required_error: 'Selecciona un método' }),
   reference: z.string().optional(),
 })
 type ManualInput = z.infer<typeof manualSchema>
 
 const MANUAL_METHODS = [
-  { value: 'YAPE' as const,          label: 'Yape',          icon: '📱' },
-  { value: 'PLIN' as const,          label: 'Plin',          icon: '📲' },
+  { value: 'YAPE' as const, label: 'Yape', icon: '📱' },
+  { value: 'PLIN' as const, label: 'Plin', icon: '📲' },
   { value: 'BANK_TRANSFER' as const, label: 'Transferencia', icon: '🏦' },
-  { value: 'CASH' as const,          label: 'Efectivo',      icon: '💵' },
+  { value: 'CASH' as const, label: 'Efectivo', icon: '💵' },
 ]
 
 export default function PayLoanPage() {
@@ -56,7 +55,7 @@ export default function PayLoanPage() {
     if (!balance) return
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const CulqiConstructor = (window as any).Culqi
+    const CulqiConstructor = (globalThis as any).Culqi
     if (!CulqiConstructor) {
       toast.error('Cargando pasarela de pago, intenta en un momento.')
       return
@@ -66,10 +65,10 @@ export default function PayLoanPage() {
 
     culqi.open({
       settings: {
-        title:       'Solvo',
-        currency:    'PEN',
+        title: 'Solvo',
+        currency: 'PEN',
         description: `Pago préstamo #${loanId.substring(0, 8).toUpperCase()}`,
-        amount:      Math.round(balance.remaining * 100),
+        amount: Math.round(balance.remaining * 100),
       },
     })
 

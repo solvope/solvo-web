@@ -9,7 +9,7 @@ interface Props {
   loan: Loan
 }
 
-export function LoanCard({ loan }: Props) {
+export function LoanCard({ loan }: Readonly<Props>) {
   return (
     <Link href={`/loans/${loan.id}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -33,7 +33,7 @@ export function LoanCard({ loan }: Props) {
               </span>
             )}
           </div>
-<div className="flex items-center justify-end text-sm text-primary font-medium">
+          <div className="flex items-center justify-end text-sm text-primary font-medium">
             Ver detalle <ArrowRight className="h-3.5 w-3.5 ml-1" />
           </div>
         </CardContent>

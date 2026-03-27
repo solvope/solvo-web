@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   keywords: ['préstamos', 'fintech', 'Perú', 'mini préstamos', 'crédito rápido'],
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>

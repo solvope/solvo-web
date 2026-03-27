@@ -30,4 +30,9 @@ export const loanRepository = {
     const { data } = await apiClient.post('/payments', { loanId, ...dto })
     return data.data
   },
+
+  async getContractUrl(loanId: string): Promise<string> {
+    const { data } = await apiClient.get(`/loans/${loanId}/contract`)
+    return data.data.url
+  },
 }

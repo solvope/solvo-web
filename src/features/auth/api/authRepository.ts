@@ -41,6 +41,14 @@ export const authRepository = {
     await apiClient.post('/auth/resend-verification', { email })
   },
 
+  async forgotPassword(email: string): Promise<void> {
+    await apiClient.post('/auth/forgot-password', { email })
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await apiClient.post('/auth/reset-password', { token, newPassword })
+  },
+
   saveToken(token: string) { localStorage.setItem(TOKEN_KEY, token) },
   clearToken() { localStorage.removeItem(TOKEN_KEY) },
   getToken(): string | null {

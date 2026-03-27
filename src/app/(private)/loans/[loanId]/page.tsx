@@ -2,9 +2,10 @@
 import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileSignature, CreditCard } from 'lucide-react'
+import { ArrowLeft, FileSignature, CreditCard, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLoanStore } from '@/features/request-loan'
+import { loanRepository } from '@/features/request-loan'
 import { LoanStatusBadge } from '@/entities/loan'
 import { canSign, isActiveLoan, canPay } from '@/entities/loan'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
@@ -19,6 +20,15 @@ export default function LoanDetailPage() {
   const { selectedLoan: loan, balance, payments, isLoading, loadLoanDetails, signLoan } = useLoanStore()
 
   useEffect(() => { loadLoanDetails(loanId) }, [loanId, loadLoanDetails])
+
+  const handleDownloadContract = async () => {
+    try {
+      const url = await loanRepository.getContractUrl(loanId)
+      window.open(url, '_blank')
+    } catch {
+      toast.error('No se pudo obtener el contrato. Inténtalo de nuevo.')
+    }
+  }
 
   const handleSign = async () => {
     try {
@@ -90,6 +100,12 @@ export default function LoanDetailPage() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {loan.contractUrl && (
+        <Button variant="outline" className="w-full gap-2" onClick={handleDownloadContract}>
+          <Download className="h-4 w-4" /> Descargar contrato
+        </Button>
       )}
 
       {(isActiveLoan(loan) || canPay(loan)) && (

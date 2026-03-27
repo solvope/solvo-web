@@ -17,7 +17,10 @@ export default function LoginPage() {
           <CardContent>
             <LoginForm />
           </CardContent>
-          <CardFooter className="justify-center">
+          <CardFooter className="flex flex-col gap-3 items-center">
+            <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
             <p className="text-sm text-muted-foreground">
               ¿No tienes cuenta?{' '}
               <Link href="/register" className="text-primary font-medium hover:underline">

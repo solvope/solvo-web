@@ -2,19 +2,27 @@
 import { useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileSignature, CreditCard, Download } from 'lucide-react'
+import { ArrowLeft, FileSignature, CreditCard, Download, CheckCircle2, Clock, AlertCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { useLoanStore, loanRepository } from '@/features/request-loan'
 import { canSign, isActiveLoan, canPay, LoanStatusBadge } from '@/entities/loan'
+import type { InstallmentStatus } from '@/entities/loan'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { Separator } from '@/shared/ui/separator'
 import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/utils'
 
+const INSTALLMENT_STATUS_CONFIG: Record<InstallmentStatus, { label: string; icon: typeof CheckCircle2; className: string }> = {
+  PAID:         { label: 'Pagada',         icon: CheckCircle2, className: 'text-green-600' },
+  PENDING:      { label: 'Pendiente',      icon: Clock,        className: 'text-muted-foreground' },
+  OVERDUE:      { label: 'Vencida',        icon: AlertCircle,  className: 'text-destructive' },
+  RESTRUCTURED: { label: 'Reestructurada', icon: RefreshCw,    className: 'text-purple-600' },
+}
+
 export default function LoanDetailPage() {
   const { loanId } = useParams<{ loanId: string }>()
-  const { selectedLoan: loan, balance, payments, isLoading, loadLoanDetails, signLoan } = useLoanStore()
+  const { selectedLoan: loan, balance, payments, installments, isLoading, loadLoanDetails, signLoan } = useLoanStore()
 
   useEffect(() => { loadLoanDetails(loanId) }, [loanId, loadLoanDetails])
 
@@ -46,6 +54,8 @@ export default function LoanDetailPage() {
       </div>
     )
   }
+
+  const activeInstallments = installments.filter(i => i.status !== 'RESTRUCTURED')
 
   return (
     <div className="space-y-6 pb-20 md:pb-0">
@@ -81,6 +91,55 @@ export default function LoanDetailPage() {
             <Separator />
             <div className="flex justify-between"><span className="text-muted-foreground">Pagado</span><span className="text-green-600">{formatCurrency(balance.totalPaid)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Pendiente</span><span className="font-bold text-primary">{formatCurrency(balance.remaining)}</span></div>
+          </CardContent>
+        </Card>
+      )}
+
+      {activeInstallments.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Cronograma de cuotas</CardTitle></CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground border-b">
+                  <th className="px-4 py-2">Cuota</th>
+                  <th className="px-4 py-2">Vencimiento</th>
+                  <th className="px-4 py-2 text-right">Capital</th>
+                  <th className="px-4 py-2 text-right">Interés</th>
+                  <th className="px-4 py-2 text-right">Total</th>
+                  <th className="px-4 py-2 text-right">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeInstallments.map(inst => {
+                  const cfg = INSTALLMENT_STATUS_CONFIG[inst.status]
+                  const Icon = cfg.icon
+                  const pendingAmount = inst.amount - inst.paidAmount
+                  return (
+                    <tr key={inst.id} className="border-b last:border-0">
+                      <td className="px-4 py-3 font-medium">#{inst.installmentNumber}</td>
+                      <td className="px-4 py-3">{formatDate(inst.dueDate)}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(inst.principal)}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(inst.interest)}</td>
+                      <td className="px-4 py-3 text-right font-medium">
+                        {formatCurrency(inst.amount)}
+                        {inst.paidAmount > 0 && inst.paidAmount < inst.amount && (
+                          <span className="block text-xs text-muted-foreground">
+                            Pendiente: {formatCurrency(pendingAmount)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium ${cfg.className}`}>
+                          <Icon className="h-3.5 w-3.5" />
+                          {cfg.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       )}

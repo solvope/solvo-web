@@ -2,10 +2,23 @@ export interface Loan {
   id: string
   userId: string
   amount: number
+  // ── Comisiones ─────────────────────────────────────────────────────────────
+  disbursementFee: number      // comisión de desembolso — se descuenta del monto recibido
+  techFee: number              // comisión de tecnología — ítem separado
+  maintenanceFee: number       // comisión de mantenimiento por cuota
+  maintenanceFeeTotal: number  // maintenanceFee × numInstallments
+  igvAmount: number            // IGV 18% sobre comisiones
+  netDisbursed: number         // monto que recibe el cliente (amount - disbursementFee)
+  // ── Totales ────────────────────────────────────────────────────────────────
+  totalInterest: number
   totalAmount: number
   currency: string
+  // ── Producto ───────────────────────────────────────────────────────────────
   termDays: number
+  numInstallments: number
+  installmentAmount: number
   interestRate: number
+  tcea: number
   tier: string
   status: LoanStatus
   dueDate?: string
@@ -40,4 +53,26 @@ export interface Payment {
   status: string
   reference?: string
   paidAt: string
+}
+
+export type InstallmentStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'RESTRUCTURED'
+
+export interface Installment {
+  id: string
+  loanId: string
+  installmentNumber: number
+  dueDate: string
+  principal: number
+  interest: number
+  amount: number
+  paidAmount: number
+  status: InstallmentStatus
+}
+
+export interface EarlyPayoffQuote {
+  loanId: string
+  payoffAmount: number
+  interestSaved: number
+  totalPending: number
+  installmentsCount: number
 }

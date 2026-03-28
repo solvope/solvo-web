@@ -1,20 +1,32 @@
 import Link from 'next/link'
-import { ShieldAlert } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
+import { ShieldAlert, ArrowRight } from 'lucide-react'
 
 export function KycBanner() {
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-4 flex items-start gap-3">
-      <ShieldAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-amber-800 dark:text-amber-200 text-sm">Verifica tu identidad</p>
-        <p className="text-sm text-amber-700 dark:text-amber-300 mt-0.5">
-          Para solicitar préstamos necesitas verificar tu DNI y selfie.
-        </p>
+    <div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+      {/* Subtle glow */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent" />
+
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/20">
+          <ShieldAlert className="h-4.5 w-4.5 text-amber-400" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-amber-200">Verifica tu identidad</p>
+          <p className="text-xs text-amber-400/80 mt-0.5">
+            Necesitas verificar tu DNI para solicitar préstamos.
+          </p>
+        </div>
+
+        <Link
+          href="/kyc"
+          className="flex shrink-0 items-center gap-1 rounded-lg bg-amber-500/15 border border-amber-500/30 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-500/25 transition-colors"
+        >
+          Verificar
+          <ArrowRight className="h-3 w-3" />
+        </Link>
       </div>
-      <Button asChild size="sm" variant="outline" className="shrink-0 border-amber-400 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/40">
-        <Link href="/kyc">Verificar</Link>
-      </Button>
     </div>
   )
 }

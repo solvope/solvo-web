@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { loanRepository } from '../api/loanRepository'
-import type { Loan, LoanBalance, Payment } from '@/entities/loan'
+import type { Loan, LoanBalance, Payment, Installment, EarlyPayoffQuote } from '@/entities/loan'
 
 interface LoanState {
   loans: Loan[]
@@ -8,12 +8,17 @@ interface LoanState {
   selectedLoan: Loan | null
   balance: LoanBalance | null
   payments: Payment[]
+  installments: Installment[]
+  earlyPayoffQuote: EarlyPayoffQuote | null
   isLoading: boolean
   loadMyLoans: () => Promise<void>
   loadLoanDetails: (loanId: string) => Promise<void>
+  loadEarlyPayoffQuote: (loanId: string) => Promise<void>
   requestLoan: (dto: { amount: number; termDays: number }) => Promise<Loan>
   signLoan: (loanId: string) => Promise<void>
   payLoan: (loanId: string, dto: { amount: number; method: string; reference?: string }) => Promise<void>
+  partialPayLoan: (loanId: string, dto: { amount: number; method: string; reference?: string }) => Promise<void>
+  earlyPayoff: (loanId: string, dto: { method: string; reference?: string }) => Promise<void>
 }
 
 export const useLoanStore = create<LoanState>((set, get) => ({
@@ -22,6 +27,8 @@ export const useLoanStore = create<LoanState>((set, get) => ({
   selectedLoan: null,
   balance: null,
   payments: [],
+  installments: [],
+  earlyPayoffQuote: null,
   isLoading: false,
 
   loadMyLoans: async () => {
@@ -43,9 +50,22 @@ export const useLoanStore = create<LoanState>((set, get) => ({
         loanRepository.getLoanBalance(loanId),
         loanRepository.getLoanPayments(loanId),
       ])
-      set({ selectedLoan: loan, balance, payments })
+      let installments: Installment[] = []
+      if (['ACTIVE', 'OVERDUE', 'DISBURSED'].includes(loan.status)) {
+        installments = await loanRepository.getSchedule(loanId).catch(() => [])
+      }
+      set({ selectedLoan: loan, balance, payments, installments })
     } finally {
       set({ isLoading: false })
+    }
+  },
+
+  loadEarlyPayoffQuote: async (loanId) => {
+    try {
+      const quote = await loanRepository.getEarlyPayoffQuote(loanId)
+      set({ earlyPayoffQuote: quote })
+    } catch {
+      set({ earlyPayoffQuote: null })
     }
   },
 
@@ -62,6 +82,19 @@ export const useLoanStore = create<LoanState>((set, get) => ({
 
   payLoan: async (loanId, dto) => {
     await loanRepository.payLoan(loanId, dto)
+    await get().loadLoanDetails(loanId)
+    await get().loadMyLoans()
+  },
+
+  partialPayLoan: async (loanId, dto) => {
+    await loanRepository.partialPayment(loanId, dto)
+    await get().loadLoanDetails(loanId)
+    await get().loadMyLoans()
+  },
+
+  earlyPayoff: async (loanId, dto) => {
+    await loanRepository.earlyPayoff({ loanId, ...dto })
+    set({ earlyPayoffQuote: null })
     await get().loadLoanDetails(loanId)
     await get().loadMyLoans()
   },

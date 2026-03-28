@@ -14,6 +14,9 @@ export interface ScheduleItem {
   dueDate: string
   principal: number
   interest: number
+  maintenanceFee: number
+  techFeePerPeriod: number
+  igvPerPeriod: number
   amount: number
 }
 
@@ -24,7 +27,11 @@ export interface SimulationResult {
   teaPercent: number
   tcea: number
   tceaPercent: number
-  commission: number
+  disbursementFee: number
+  techFee: number
+  maintenanceFee: number
+  maintenanceFeeTotal: number
+  igvAmount: number
   netDisbursed: number
   numInstallments: number
   periodDays: number

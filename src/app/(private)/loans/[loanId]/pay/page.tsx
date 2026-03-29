@@ -6,16 +6,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { ArrowLeft, Loader2, CreditCard, Smartphone, Sparkles, TrendingDown } from 'lucide-react'
+import { Loader2, Sparkles, TrendingDown } from 'lucide-react'
 import { loanRepository, useLoanStore } from '@/features/request-loan'
 import { useAuthStore } from '@/features/auth'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/ui/form'
-import { Skeleton } from '@/shared/ui/skeleton'
-import { Separator } from '@/shared/ui/separator'
 import { formatCurrency } from '@/shared/lib/utils'
+
+const cardCls = 'bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 rounded-lg'
 
 const manualSchema = z.object({
   amount: z.number({ invalid_type_error: 'Ingresa un monto' }).positive('Debe ser mayor a 0'),
@@ -24,18 +20,20 @@ const manualSchema = z.object({
 })
 type ManualInput = z.infer<typeof manualSchema>
 
-const MANUAL_METHODS = [
-  { value: 'YAPE' as const, label: 'Yape', icon: '📱' },
-  { value: 'PLIN' as const, label: 'Plin', icon: '📲' },
-  { value: 'BANK_TRANSFER' as const, label: 'Transferencia', icon: '🏦' },
-  { value: 'CASH' as const, label: 'Efectivo', icon: '💵' },
-]
-
 const earlyPayoffMethodSchema = z.object({
   method: z.enum(['YAPE', 'PLIN', 'BANK_TRANSFER', 'CASH'], { required_error: 'Selecciona un método' }),
   reference: z.string().optional(),
 })
 type EarlyPayoffMethodInput = z.infer<typeof earlyPayoffMethodSchema>
+
+const MANUAL_METHODS = [
+  { value: 'YAPE' as const, label: 'Yape', icon: 'fa-solid fa-mobile-screen-button' },
+  { value: 'PLIN' as const, label: 'Plin', icon: 'fa-solid fa-mobile-screen' },
+  { value: 'BANK_TRANSFER' as const, label: 'Transferencia', icon: 'fa-solid fa-building-columns' },
+  { value: 'CASH' as const, label: 'Efectivo', icon: 'fa-solid fa-money-bills' },
+]
+
+const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/6 bg-[#F9FAFB] dark:bg-[#0F172A] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/20 transition-all text-sm placeholder-gray-400 dark:placeholder-gray-500'
 
 export default function PayLoanPage() {
   const { loanId } = useParams<{ loanId: string }>()
@@ -44,20 +42,17 @@ export default function PayLoanPage() {
   const { user } = useAuthStore()
   const [showEarlyPayoff, setShowEarlyPayoff] = useState(false)
   const [isEarlyPayoffSubmitting, setIsEarlyPayoffSubmitting] = useState(false)
+  const [activeMethod, setActiveMethod] = useState<'card' | 'manual'>('card')
 
   useEffect(() => { loadLoanDetails(loanId) }, [loanId, loadLoanDetails])
-
   useEffect(() => {
-    if (loan && ['ACTIVE', 'OVERDUE'].includes(loan.status)) {
-      loadEarlyPayoffQuote(loanId)
-    }
+    if (loan && ['ACTIVE', 'OVERDUE'].includes(loan.status)) loadEarlyPayoffQuote(loanId)
   }, [loanId, loan, loadEarlyPayoffQuote])
 
   const form = useForm<ManualInput>({
     resolver: zodResolver(manualSchema),
     defaultValues: { amount: 0, method: 'YAPE', reference: '' },
   })
-
   const earlyPayoffForm = useForm<EarlyPayoffMethodInput>({
     resolver: zodResolver(earlyPayoffMethodSchema),
     defaultValues: { method: 'YAPE', reference: '' },
@@ -67,30 +62,21 @@ export default function PayLoanPage() {
     if (balance) form.setValue('amount', balance.remaining)
   }, [balance, form])
 
-  // ─── Pago con tarjeta via Culqi ───────────────────────────────────────────
   const handleCardPayment = useCallback(() => {
     const publicKey = process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY
     if (!publicKey) { toast.error('El pago con tarjeta no está disponible en este momento.'); return }
     if (!balance) return
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const CulqiConstructor = (globalThis as any).Culqi
-    if (!CulqiConstructor) {
-      toast.error('Cargando pasarela de pago, intenta en un momento.')
-      return
-    }
-
+    if (!CulqiConstructor) { toast.error('Cargando pasarela de pago, intenta en un momento.'); return }
     const culqi = new CulqiConstructor({ publicKey })
-
     culqi.open({
       settings: {
-        title: 'Solvo',
-        currency: 'PEN',
+        title: 'Solvo', currency: 'PEN',
         description: `Pago préstamo #${loanId.substring(0, 8).toUpperCase()}`,
         amount: Math.round(balance.remaining * 100),
       },
     })
-
     culqi.on('token', async ({ id: culqiToken }: { id: string }) => {
       culqi.close()
       try {
@@ -101,30 +87,24 @@ export default function PayLoanPage() {
         toast.error(err instanceof Error ? err.message : 'Error al procesar el pago')
       }
     })
-
     culqi.on('error', (err: { user_message?: string }) => {
       toast.error(err.user_message || 'Error en la pasarela de pago.')
     })
   }, [balance, loanId, router])
 
-  // ─── Pago parcial / normal manual ────────────────────────────────────────
   const onSubmit = async (values: ManualInput) => {
     try {
+      await partialPayLoan(loanId, values)
       const isPartial = balance && values.amount < balance.remaining
-      if (isPartial) {
-        await partialPayLoan(loanId, values)
-        toast.success('¡Pago parcial registrado! El equipo Solvo lo verificará pronto.')
-      } else {
-        await partialPayLoan(loanId, values)
-        toast.success('¡Pago registrado! El equipo Solvo lo verificará pronto.')
-      }
+      toast.success(isPartial
+        ? '¡Pago parcial registrado! El equipo Solvo lo verificará pronto.'
+        : '¡Pago registrado! El equipo Solvo lo verificará pronto.')
       router.push(`/loans/${loanId}`)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al registrar el pago')
     }
   }
 
-  // ─── Pago anticipado ──────────────────────────────────────────────────────
   const onEarlyPayoffSubmit = async (values: EarlyPayoffMethodInput) => {
     setIsEarlyPayoffSubmitting(true)
     try {
@@ -140,9 +120,10 @@ export default function PayLoanPage() {
 
   if (isLoading || !loan || !balance) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-60 rounded-xl" />
+      <div className="space-y-6">
+        <div className="h-8 w-40 bg-gray-200 dark:bg-[#334155] rounded-xl animate-pulse" />
+        <div className={`${cardCls} h-40 animate-pulse`} />
+        <div className={`${cardCls} h-64 animate-pulse`} />
       </div>
     )
   }
@@ -151,225 +132,264 @@ export default function PayLoanPage() {
   const isPartialAmount = currentAmount > 0 && currentAmount < balance.remaining
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
-      <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon">
-          <Link href={`/loans/${loanId}`}><ArrowLeft className="h-5 w-5" /></Link>
-        </Button>
-        <h1 className="text-xl font-bold">Realizar pago</h1>
+    <div className="space-y-6 max-w-2xl">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link
+          href={`/loans/${loanId}`}
+          className="w-10 h-10 rounded-xl bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors "
+        >
+          <i className="fa-solid fa-arrow-left" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-[#0A192F] dark:text-white">Realizar Pago</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Préstamo #{loanId.substring(0, 8).toUpperCase()}</p>
+        </div>
       </div>
 
-      {/* Resumen */}
-      <Card>
-        <CardHeader><CardTitle>Saldo pendiente</CardTitle></CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold text-primary">{formatCurrency(balance.remaining)}</p>
+      {/* Balance summary */}
+      <div className="rounded-lg p-6 relative overflow-hidden shadow-lg"
+        style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1A365D 100%)' }}
+      >
+        <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#00E5FF]/20 rounded-full blur-2xl" />
+        <div className="relative z-10">
+          <p className="text-gray-300 text-sm mb-1">Saldo Pendiente</p>
+          <p className="text-4xl font-bold text-white mb-4">{formatCurrency(balance.remaining)}</p>
           {balance.dueDate && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Vence el {new Date(balance.dueDate).toLocaleDateString('es-PE', {
-                day: 'numeric', month: 'long', year: 'numeric',
-              })}
+            <p className="text-gray-300 text-sm">
+              Vence el {new Date(balance.dueDate).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           )}
           {balance.isOverdue && (
-            <p className="text-sm text-destructive font-medium mt-1">Este préstamo está vencido</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Pago anticipado — se muestra solo si hay quote y no está en modo early payoff */}
-      {earlyPayoffQuote && !showEarlyPayoff && (
-        <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30">
-          <CardContent className="pt-4">
-            <div className="flex items-start gap-3">
-              <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-semibold text-emerald-800 dark:text-emerald-200">
-                  Cancela hoy y ahorra en intereses
-                </p>
-                <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
-                  Solo pagas el capital restante:{' '}
-                  <strong>{formatCurrency(earlyPayoffQuote.payoffAmount)}</strong>
-                  {earlyPayoffQuote.interestSaved > 0 && (
-                    <span className="ml-1">
-                      — te ahorras <strong>{formatCurrency(earlyPayoffQuote.interestSaved)}</strong> en intereses.
-                    </span>
-                  )}
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3 border-emerald-400 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900"
-                  onClick={() => setShowEarlyPayoff(true)}
-                >
-                  <TrendingDown className="h-3.5 w-3.5 mr-1.5" />
-                  Pagar anticipado ({formatCurrency(earlyPayoffQuote.payoffAmount)})
-                </Button>
-              </div>
+            <div className="flex items-center gap-2 mt-2 text-red-300 text-sm">
+              <i className="fa-solid fa-triangle-exclamation" />
+              Este préstamo está vencido
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Early payoff offer */}
+      {earlyPayoffQuote && !showEarlyPayoff && (
+        <div className={`${cardCls} p-5 border-l-2 border-l-emerald-400`}>
+          <div className="flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-[#0A192F] dark:text-white text-sm">Cancela hoy y ahorra en intereses</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                Solo pagas el capital: <strong className="text-[#0A192F] dark:text-[#D4AF37]">{formatCurrency(earlyPayoffQuote.payoffAmount)}</strong>
+                {earlyPayoffQuote.interestSaved > 0 && (
+                  <span className="ml-1 text-emerald-600 dark:text-emerald-400">
+                    — ahorras <strong>{formatCurrency(earlyPayoffQuote.interestSaved)}</strong>
+                  </span>
+                )}
+              </p>
+              <button
+                onClick={() => setShowEarlyPayoff(true)}
+                className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 text-sm font-medium hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+              >
+                <TrendingDown className="h-4 w-4" />
+                Pagar anticipado ({formatCurrency(earlyPayoffQuote.payoffAmount)})
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Formulario de pago anticipado */}
+      {/* Early payoff form */}
       {showEarlyPayoff && earlyPayoffQuote && (
-        <Card className="border-emerald-200 dark:border-emerald-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base text-emerald-700 dark:text-emerald-300">
-              <Sparkles className="h-5 w-5" /> Pago anticipado
-            </CardTitle>
-            <CardDescription>
-              Pagarás <strong>{formatCurrency(earlyPayoffQuote.payoffAmount)}</strong> y tu préstamo quedará cancelado.
-              {earlyPayoffQuote.interestSaved > 0 && (
-                <> Te ahorras <strong>{formatCurrency(earlyPayoffQuote.interestSaved)}</strong> en intereses.</>
+        <div className={`${cardCls} p-6 border border-emerald-200 dark:border-emerald-800`}>
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-5 w-5 text-emerald-500" />
+            <h3 className="text-base font-semibold text-emerald-700 dark:text-emerald-300">Pago Anticipado</h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">
+            Pagarás <strong>{formatCurrency(earlyPayoffQuote.payoffAmount)}</strong> y tu préstamo quedará cancelado.
+            {earlyPayoffQuote.interestSaved > 0 && <> Ahorras <strong>{formatCurrency(earlyPayoffQuote.interestSaved)}</strong>.</>}
+          </p>
+          <form onSubmit={earlyPayoffForm.handleSubmit(onEarlyPayoffSubmit)} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Método de pago</label>
+              <div className="grid grid-cols-2 gap-2">
+                {MANUAL_METHODS.map(m => {
+                  const selected = earlyPayoffForm.watch('method') === m.value
+                  return (
+                    <button key={m.value} type="button"
+                      onClick={() => earlyPayoffForm.setValue('method', m.value)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${selected
+                          ? 'border-[#0A192F] dark:border-[#D4AF37] bg-[#0A192F]/5 dark:bg-[#D4AF37]/10 text-[#0A192F] dark:text-[#D4AF37]'
+                          : 'border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#0F172A]'
+                        }`}
+                    >
+                      <i className={`${m.icon} text-base`} />
+                      {m.label}
+                    </button>
+                  )
+                })}
+              </div>
+              {earlyPayoffForm.formState.errors.method && (
+                <p className="text-red-500 text-xs mt-1">{earlyPayoffForm.formState.errors.method.message}</p>
               )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...earlyPayoffForm}>
-              <form onSubmit={earlyPayoffForm.handleSubmit(onEarlyPayoffSubmit)} className="space-y-4">
-                <FormField control={earlyPayoffForm.control} name="method" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Método de pago</FormLabel>
-                    <FormControl>
-                      <div className="grid grid-cols-2 gap-2">
-                        {MANUAL_METHODS.map(m => (
-                          <button key={m.value} type="button" onClick={() => field.onChange(m.value)}
-                            className={`rounded-lg border px-3 py-2.5 text-sm text-left transition-all
-                              ${field.value === m.value
-                                ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary'
-                                : 'border-input hover:bg-accent'
-                              }`}
-                          >
-                            <span className="mr-1.5">{m.icon}</span>{m.label}
-                          </button>
-                        ))}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <FormField control={earlyPayoffForm.control} name="reference" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número de operación</FormLabel>
-                    <FormControl><Input placeholder="Ej: 123456789" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowEarlyPayoff(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="flex-1 bg-emerald-600 hover:bg-emerald-700" disabled={isEarlyPayoffSubmitting}>
-                    {isEarlyPayoffSubmitting
-                      ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Registrando...</>
-                      : `Confirmar pago de ${formatCurrency(earlyPayoffQuote.payoffAmount)}`}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Número de operación</label>
+              <input type="text" placeholder="Ej: 123456789" className={inputCls}
+                {...earlyPayoffForm.register('reference')} />
+            </div>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowEarlyPayoff(false)}
+                className="flex-1 py-3 rounded-xl border border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors text-sm">
+                Cancelar
+              </button>
+              <button type="submit" disabled={isEarlyPayoffSubmitting}
+                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-60 text-sm flex items-center justify-center gap-2">
+                {isEarlyPayoffSubmitting
+                  ? <><Loader2 className="h-4 w-4 animate-spin" />Registrando...</>
+                  : `Confirmar pago de ${formatCurrency(earlyPayoffQuote.payoffAmount)}`}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
+      {/* Payment method selector */}
       {!showEarlyPayoff && (
         <>
-          {/* Opción 1: Tarjeta (Culqi) */}
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCard className="h-5 w-5 text-primary" /> Pagar con tarjeta
-              </CardTitle>
-              <CardDescription>Visa o Mastercard — confirmación inmediata</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full gap-2" onClick={handleCardPayment} disabled={!user}>
-                <CreditCard className="h-4 w-4" />
-                Pagar {formatCurrency(balance.remaining)} con tarjeta
-              </Button>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground px-2">o paga con billetera / transferencia</span>
-            <Separator className="flex-1" />
+          {/* Method toggle */}
+          <div className={`${cardCls} p-2`}>
+            <div className="grid grid-cols-2 gap-1">
+              {[
+                { id: 'card' as const, icon: 'fa-solid fa-credit-card', label: 'Tarjeta' },
+                { id: 'manual' as const, icon: 'fa-solid fa-mobile-screen-button', label: 'Yape / Transferencia' },
+              ].map(m => (
+                <button key={m.id} onClick={() => setActiveMethod(m.id)}
+                  className={`flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${activeMethod === m.id
+                      ? 'bg-[#0A192F] dark:bg-[#D4AF37] text-white dark:text-[#0A192F] shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A]'
+                    }`}
+                >
+                  <i className={m.icon} />
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Opción 2: Métodos manuales */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Smartphone className="h-5 w-5" /> Yape / Plin / Transferencia
-              </CardTitle>
-              <CardDescription>
-                {isPartialAmount
-                  ? 'Pago parcial — se aplicará a tus cuotas más antiguas primero'
-                  : 'Ingresa el número de operación y nuestro equipo lo verificará'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField control={form.control} name="amount" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Monto a pagar (S/)
-                        {isPartialAmount && (
-                          <span className="ml-2 text-xs font-normal text-amber-600">Pago parcial</span>
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" min="0.01" max={balance.remaining} {...field}
-                          onChange={e => field.onChange(e.target.valueAsNumber)} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+          {/* Card payment */}
+          {activeMethod === 'card' && (
+            <div className={`${cardCls} p-6`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-lg bg-[#0A192F]/5 dark:bg-[#D4AF37]/10 flex items-center justify-center text-[#0A192F] dark:text-[#D4AF37]">
+                  <i className="fa-solid fa-credit-card" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#0A192F] dark:text-white text-sm">Pagar con tarjeta</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Visa o Mastercard — confirmación inmediata</p>
+                </div>
+              </div>
+              <div className="mt-5 p-4 rounded-lg bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-white/6 flex justify-between items-center mb-5">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Total a pagar</span>
+                <span className="text-xl font-bold text-[#0A192F] dark:text-[#D4AF37]">{formatCurrency(balance.remaining)}</span>
+              </div>
+              <button
+                onClick={handleCardPayment}
+                disabled={!user}
+                className="w-full bg-[#0A192F] dark:bg-[#D4AF37] text-white dark:text-[#0A192F] font-medium py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-lock" />
+                Pagar {formatCurrency(balance.remaining)} con tarjeta
+              </button>
+              <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-3">
+                <i className="fa-solid fa-shield-halved mr-1" />
+                Pago seguro procesado por Culqi
+              </p>
+            </div>
+          )}
 
-                  <FormField control={form.control} name="method" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Método</FormLabel>
-                      <FormControl>
-                        <div className="grid grid-cols-2 gap-2">
-                          {MANUAL_METHODS.map(m => (
-                            <button key={m.value} type="button" onClick={() => field.onChange(m.value)}
-                              className={`rounded-lg border px-3 py-2.5 text-sm text-left transition-all
-                                ${field.value === m.value
-                                  ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary'
-                                  : 'border-input hover:bg-accent'
-                                }`}
-                            >
-                              <span className="mr-1.5">{m.icon}</span>{m.label}
-                            </button>
-                          ))}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+          {/* Manual payment */}
+          {activeMethod === 'manual' && (
+            <div className={`${cardCls} p-6`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-lg bg-[#0A192F]/5 dark:bg-[#D4AF37]/10 flex items-center justify-center text-[#0A192F] dark:text-[#D4AF37]">
+                  <i className="fa-solid fa-mobile-screen-button" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#0A192F] dark:text-white text-sm">Yape / Plin / Transferencia</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {isPartialAmount ? 'Pago parcial — se aplica a cuotas más antiguas' : 'Ingresa el número de operación para verificar'}
+                  </p>
+                </div>
+              </div>
 
-                  <FormField control={form.control} name="reference" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Número de operación</FormLabel>
-                      <FormControl><Input placeholder="Ej: 123456789" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-5">
+                {/* Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Monto a pagar (S/)
+                    {isPartialAmount && (
+                      <span className="ml-2 text-xs font-normal text-amber-600 dark:text-amber-400">Pago parcial</span>
+                    )}
+                  </label>
+                  <input
+                    type="number" step="0.01" min="0.01" max={balance.remaining}
+                    className={inputCls}
+                    {...form.register('amount', { valueAsNumber: true })}
+                  />
+                  {form.formState.errors.amount && (
+                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.amount.message}</p>
+                  )}
+                </div>
 
-                  <Button type="submit" variant="outline" className="w-full" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting
-                      ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Registrando...</>
-                      : isPartialAmount
-                        ? `Registrar pago parcial de ${formatCurrency(currentAmount)}`
-                        : 'Registrar pago'}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                {/* Method */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Método</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MANUAL_METHODS.map(m => {
+                      const selected = form.watch('method') === m.value
+                      return (
+                        <button key={m.value} type="button"
+                          onClick={() => form.setValue('method', m.value)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${selected
+                              ? 'border-[#0A192F] dark:border-[#D4AF37] bg-[#0A192F]/5 dark:bg-[#D4AF37]/10 text-[#0A192F] dark:text-[#D4AF37]'
+                              : 'border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#0F172A]'
+                            }`}
+                        >
+                          <i className={`${m.icon} text-base`} />
+                          {m.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {form.formState.errors.method && (
+                    <p className="text-red-500 text-xs mt-1">{form.formState.errors.method.message}</p>
+                  )}
+                </div>
+
+                {/* Reference */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Número de operación</label>
+                  <input type="text" placeholder="Ej: 123456789" className={inputCls}
+                    {...form.register('reference')} />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={form.formState.isSubmitting}
+                  className="w-full bg-[#0A192F] dark:bg-[#D4AF37] text-white dark:text-[#0A192F] font-medium py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {form.formState.isSubmitting
+                    ? <><Loader2 className="h-4 w-4 animate-spin" />Registrando...</>
+                    : isPartialAmount
+                      ? `Registrar pago parcial de ${formatCurrency(currentAmount)}`
+                      : 'Registrar pago'}
+                </button>
+
+                <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+                  El equipo Solvo verificará tu pago en las próximas horas.
+                </p>
+              </form>
+            </div>
+          )}
         </>
       )}
     </div>

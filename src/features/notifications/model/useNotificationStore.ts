@@ -19,7 +19,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   load: async () => {
     set({ isLoading: true })
     try {
-      const notifications = await notificationsRepository.getAll()
+      const raw = await notificationsRepository.getAll()
+      const notifications = Array.isArray(raw) ? raw : []
       set({ notifications, unreadCount: notifications.filter(n => !n.isRead).length })
     } finally {
       set({ isLoading: false })

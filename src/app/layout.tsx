@@ -1,15 +1,12 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans } from 'next/font/google'
+import { Plus_Jakarta_Sans, Geist } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/shared/ui/sonner'
 import Script from 'next/script'
 import './globals.css'
+import { cn } from "@/lib/utils";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-sans',
-})
+const geist = Geist({subsets:['latin'],variable:'--font-sans'})
 
 export const metadata: Metadata = {
   title: 'Solvo — Mini préstamos para Perú',
@@ -19,8 +16,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className={`${plusJakartaSans.variable} font-[family-name:var(--font-sans)]`}>
+    <html lang="es" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+      <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+      </head>
+      <body className={`${geist.variable} font-[family-name:var(--font-sans)]`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
           <Toaster richColors position="top-right" />

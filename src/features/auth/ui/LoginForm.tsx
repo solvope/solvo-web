@@ -3,23 +3,25 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+import Link from 'next/link'
+import { Loader2 } from 'lucide-react'
 import { loginSchema, type LoginInput } from '../lib/authSchemas'
 import { useAuthStore } from '../model/useAuthStore'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/ui/form'
+
+const inputCls =
+  'w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[#0A192F] dark:text-[#F1F5F9] text-[0.95rem] placeholder-gray-400 dark:placeholder-[#64748B] focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] focus:ring-[3px] focus:ring-[#0A192F]/10 dark:focus:ring-[#D4AF37]/15 transition-all'
 
 export function LoginForm() {
   const router = useRouter()
   const { login } = useAuthStore()
   const [showPass, setShowPass] = useState(false)
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
-  })
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) })
 
   const onSubmit = async (values: LoginInput) => {
     try {
@@ -31,36 +33,81 @@ export function LoginForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField control={form.control} name="email" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Correo electrónico</FormLabel>
-            <FormControl><Input placeholder="tu@email.com" type="email" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField control={form.control} name="password" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Contraseña</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Input type={showPass ? 'text' : 'password'} placeholder="••••••••" {...field} className="pr-10" />
-                <button type="button" onClick={() => setShowPass(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting
-            ? <><Loader2 className="h-4 w-4 animate-spin" /> Iniciando sesión...</>
-            : 'Iniciar sesión'}
-        </Button>
-      </form>
-    </Form>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {/* Email */}
+      <div className="space-y-1.5">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Email</label>
+        <input
+          type="email"
+          placeholder="tu@email.com"
+          autoComplete="email"
+          className={inputCls}
+          {...register('email')}
+        />
+        {errors.email && (
+          <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1 mt-1">
+            <i className="fa-solid fa-circle-exclamation" /> {errors.email.message}
+          </p>
+        )}
+      </div>
+
+      {/* Password */}
+      <div className="space-y-1.5">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Contraseña</label>
+        <div className="relative">
+          <input
+            type={showPass ? 'text' : 'password'}
+            placeholder="Tu contraseña"
+            autoComplete="current-password"
+            className={`${inputCls} pr-12`}
+            {...register('password')}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPass(p => !p)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <i className={`fa-regular ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} />
+          </button>
+        </div>
+        {errors.password && (
+          <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1 mt-1">
+            <i className="fa-solid fa-circle-exclamation" /> {errors.password.message}
+          </p>
+        )}
+      </div>
+
+      {/* Remember + Forgot */}
+      <div className="flex items-center justify-between pt-1">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded border-gray-300 dark:border-[#334155] accent-[#0A192F] dark:accent-[#D4AF37] cursor-pointer"
+          />
+          <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">Recordarme</span>
+        </label>
+        <Link
+          href="/forgot-password"
+          className="text-sm font-semibold text-[#0A192F] dark:text-[#D4AF37] hover:underline"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
+
+      {/* Submit */}
+      <div className="pt-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-4 rounded-xl bg-[#0A192F] text-[#D4AF37] font-bold text-base hover:bg-[#112240] hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 transition-all flex items-center justify-center gap-2"
+        >
+          {isSubmitting ? (
+            <><Loader2 className="h-4 w-4 animate-spin" /> Iniciando sesión...</>
+          ) : (
+            <><span>Iniciar Sesión</span><i className="fa-solid fa-arrow-right text-sm" /></>
+          )}
+        </button>
+      </div>
+    </form>
   )
 }

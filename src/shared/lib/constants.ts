@@ -13,3 +13,5 @@ export const PAYMENT_METHODS = [
 ] as const
 
 export const TOKEN_KEY = 'solvo_token'
+
+export const CURRENT_YEAR = new Date().getFullYear()

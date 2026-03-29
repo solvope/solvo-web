@@ -1,65 +1,429 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import Link from 'next/link'
 import { useAuthStore } from '@/features/auth'
 import { useLoanStore, RequestLoanModal } from '@/features/request-loan'
-import { KycBanner } from '@/widgets/kyc-banner'
-import { ActiveLoanBanner } from '@/widgets/active-loan-banner'
-import { LoanCard } from '@/widgets/loan-card'
-import { Button } from '@/shared/ui/button'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { useNotificationStore } from '@/features/notifications'
 import { kycRepository } from '@/features/upload-kyc'
+import { formatCurrency, formatDate } from '@/shared/lib/utils'
+
+const cardCls = 'bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 rounded-lg'
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
   const { loans, activeLoan, isLoading, loadMyLoans } = useLoanStore()
+  const { unreadCount, load: loadNotifications } = useNotificationStore()
   const [showModal, setShowModal] = useState(false)
   const [kycApproved, setKycApproved] = useState(false)
 
   useEffect(() => {
     loadMyLoans()
-    kycRepository.getStatus().then(s => setKycApproved(s.isIdentityVerified)).catch(() => { })
-  }, [loadMyLoans])
+    loadNotifications()
+    kycRepository.getStatus()
+      .then(s => setKycApproved(s.isIdentityVerified))
+      .catch(() => { })
+  }, [loadMyLoans, loadNotifications])
 
-  const recentLoans = loans.slice(0, 5)
+  const activeLoans = loans.filter(l => ['APPROVED', 'SIGNED', 'ACTIVE', 'OVERDUE'].includes(l.status))
+  const pendingLoans = loans.filter(l => l.status === 'PENDING')
+  const recentActivity = loans.slice(0, 3)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Hola, {user?.firstName} 👋</h1>
-          <p className="text-muted-foreground text-sm">Gestiona tus préstamos desde aquí</p>
+          <h1 className="text-3xl font-bold text-[#0A192F] dark:text-white mb-1">
+            Resumen de tu cuenta
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            Aquí tienes el estado actual de tus finanzas y préstamos en Soles.
+          </p>
         </div>
-        {kycApproved && !activeLoan && (
-          <Button onClick={() => setShowModal(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Solicitar
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/notifications"
+            className="w-10 h-10 rounded-xl bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors relative"
+          >
+            <i className="fa-regular fa-bell" />
+            {unreadCount > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-[#1E293B]" />
+            )}
+          </Link>
+          {kycApproved && !activeLoan && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#D4AF37] text-[#0A192F] font-medium px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-[#B8941F] transition-colors"
+            >
+              <i className="fa-solid fa-plus" />
+              Nuevo Préstamo
+            </button>
+          )}
+        </div>
       </div>
 
-      {!kycApproved && <KycBanner />}
-      {activeLoan && <ActiveLoanBanner loan={activeLoan} />}
-
-      <div>
-        <h2 className="font-semibold mb-3">Mis préstamos recientes</h2>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+      {/* Security Banner */}
+      <div className={`${cardCls} p-4 flex items-center justify-between border-l-2 border-l-[#00E5FF]`}>
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF]">
+            <i className="fa-solid fa-shield-halved text-xl" />
           </div>
-        ) : recentLoans.length === 0 ? (
-          <div className="rounded-xl border border-dashed p-10 text-center">
-            <p className="text-muted-foreground text-sm">No tienes préstamos aún.</p>
-            {kycApproved && (
-              <Button onClick={() => setShowModal(true)} variant="outline" className="mt-3 gap-2">
-                <Plus className="h-4 w-4" /> Solicitar tu primer préstamo
-              </Button>
+          <div>
+            <h4 className="text-[#0A192F] dark:text-white font-medium text-sm">
+              Protección de cuenta activada
+            </h4>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
+              Tu cuenta está protegida con cifrado 256-bits regulado por SBS.
+            </p>
+          </div>
+        </div>
+        <button className="text-sm text-[#00E5FF] font-medium hover:text-[#0A192F] dark:hover:text-[#D4AF37] transition-colors shrink-0">
+          Ver detalles
+        </button>
+      </div>
+
+      {/* KYC Banner */}
+      {!kycApproved && (
+        <div className={`${cardCls} p-5 flex items-center justify-between border-l-2 border-l-amber-400`}>
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <i className="fa-solid fa-id-card text-xl" />
+            </div>
+            <div>
+              <h4 className="text-[#0A192F] dark:text-white font-medium text-sm">
+                Verifica tu identidad para solicitar préstamos
+              </h4>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">
+                Es rápido — solo necesitas tu DNI y una selfie.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/kyc"
+            className="bg-[#0A192F] dark:bg-[#D4AF37] text-white dark:text-[#0A192F] font-semibold px-4 py-2 rounded-xl text-sm hover:opacity-90 transition-opacity shrink-0"
+          >
+            Verificar ahora
+          </Link>
+        </div>
+      )}
+
+      {/* Main stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Hero card — total pending balance */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-1 rounded-lg p-8 relative overflow-hidden shadow-xl"
+          style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1A365D 100%)' }}
+        >
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#00E5FF]/20 rounded-full blur-2xl" />
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-xl" />
+          <div className="relative z-10 flex flex-col h-full gap-8">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-300 font-medium text-sm mb-1">Saldo Pendiente Total</p>
+                {isLoading ? (
+                  <div className="h-10 w-32 bg-white/10 rounded-lg animate-pulse" />
+                ) : (
+                  <h2 className="text-4xl font-bold text-white tracking-tight">
+                    {activeLoan ? formatCurrency(activeLoan.amount) : 'S/ 0.00'}
+                  </h2>
+                )}
+              </div>
+              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-[#D4AF37]">
+                <i className="fa-solid fa-wallet text-xl" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center bg-white/10 rounded-xl p-3">
+                <span className="text-gray-200 text-sm font-medium">
+                  {activeLoan ? 'Préstamo activo' : 'Sin préstamos activos'}
+                </span>
+                {activeLoan && (
+                  <span className="text-[#D4AF37] font-bold text-sm">
+                    {activeLoan.status}
+                  </span>
+                )}
+              </div>
+              {activeLoan ? (
+                <div className="flex gap-3">
+                  <Link
+                    href={`/loans/${activeLoan.id}/pay`}
+                    className="flex-1 bg-[#D4AF37] text-[#0A192F] py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors text-center text-sm"
+                  >
+                    Pagar Ahora
+                  </Link>
+                  <Link
+                    href={`/loans/${activeLoan.id}`}
+                    className="w-12 bg-white/10 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-colors flex items-center justify-center"
+                  >
+                    <i className="fa-solid fa-arrow-right text-sm" />
+                  </Link>
+                </div>
+              ) : (
+                <button
+                  onClick={() => kycApproved && setShowModal(true)}
+                  disabled={!kycApproved}
+                  className="w-full bg-[#D4AF37] text-[#0A192F] py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  {kycApproved ? 'Solicitar Préstamo' : 'Verificar Identidad Primero'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Active loans count */}
+        <div className={`${cardCls} p-6 flex flex-col justify-between`}>
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-9 h-9 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 flex items-center justify-center">
+              <i className="fa-regular fa-calendar" />
+            </div>
+            <span className="px-2.5 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs font-medium rounded-full">
+              {activeLoans.length > 0 ? 'Activo' : 'Sin actividad'}
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">Préstamos Activos</p>
+            <h3 className="text-2xl font-bold text-[#0A192F] dark:text-white mb-2">
+              {isLoading ? '–' : activeLoans.length}
+            </h3>
+            {activeLoan?.dueDate ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Vence el {formatDate(activeLoan.dueDate)}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {activeLoans.length === 0 ? 'No tienes préstamos activos.' : 'Revisa tus préstamos.'}
+              </p>
             )}
           </div>
-        ) : (
-          <div className="space-y-3">
-            {recentLoans.map(loan => <LoanCard key={loan.id} loan={loan} />)}
+          {activeLoans.length > 0 && (
+            <div className="mt-4">
+              <div className="w-full bg-gray-100 dark:bg-[#0F172A] rounded-full h-2 mb-2">
+                <div
+                  className="bg-[#D4AF37] h-2 rounded-full"
+                  style={{ width: `${Math.min(100, (activeLoans.length / Math.max(loans.length, 1)) * 100)}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
+                <span>Préstamos activos</span>
+                <span>{activeLoans.length}/{loans.length}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pending loans */}
+        <div className={`${cardCls} p-6 flex flex-col justify-between`}>
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 flex items-center justify-center">
+              <i className="fa-solid fa-file-signature" />
+            </div>
+            <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+              {pendingLoans.length > 0 ? 'En revisión' : 'Sin solicitudes'}
+            </span>
           </div>
-        )}
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">Solicitudes Pendientes</p>
+            <h3 className="text-xl font-bold text-[#0A192F] dark:text-white mb-2">
+              {isLoading ? '–' : pendingLoans.length}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {pendingLoans.length > 0
+                ? 'Analizando historial crediticio...'
+                : kycApproved
+                  ? 'Puedes solicitar un nuevo préstamo.'
+                  : 'Verifica tu identidad para solicitar.'}
+            </p>
+          </div>
+          {kycApproved && !activeLoan && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="w-full mt-4 py-3 rounded-xl border border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-[#0F172A] hover:border-[#0A192F] dark:hover:border-[#D4AF37] hover:text-[#0A192F] dark:hover:text-[#D4AF37] transition-colors text-sm"
+            >
+              Ver estado detallado
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Quick access */}
+      <div>
+        <h3 className="text-lg font-semibold text-[#0A192F] dark:text-white mb-4">Accesos Rápidos</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: 'fa-solid fa-hand-holding-dollar', label: 'Solicitar Préstamo', color: 'text-[#00E5FF]', bg: 'bg-[#00E5FF]/10', href: '/request-loan', hoverBorder: 'hover:border-[#00E5FF]' },
+            { icon: 'fa-solid fa-wallet', label: 'Mis Préstamos', color: 'text-[#0A192F] dark:text-[#D4AF37]', bg: 'bg-[#0A192F]/5 dark:bg-[#D4AF37]/10', href: '/loans', hoverBorder: 'hover:border-[#0A192F] dark:hover:border-[#D4AF37]' },
+            { icon: 'fa-solid fa-money-bill-transfer', label: 'Hacer Pago', color: 'text-[#0A192F] dark:text-[#D4AF37]', bg: 'bg-[#0A192F]/5 dark:bg-[#D4AF37]/10', href: activeLoan ? `/loans/${activeLoan.id}/pay` : '/loans', hoverBorder: 'hover:border-[#0A192F] dark:hover:border-[#D4AF37]' },
+            { icon: 'fa-solid fa-headset', label: 'Ayuda', color: 'text-[#0A192F] dark:text-[#D4AF37]', bg: 'bg-[#0A192F]/5 dark:bg-[#D4AF37]/10', href: '#', hoverBorder: 'hover:border-[#0A192F] dark:hover:border-[#D4AF37]' },
+          ].map(item => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`${cardCls} p-4 flex flex-col items-center justify-center gap-3 ${item.hoverBorder} transition-colors group`}
+            >
+              <div className={`w-10 h-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                <i className={`${item.icon} text-lg`} />
+              </div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#0A192F] dark:group-hover:text-white text-center">
+                {item.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Financial Education */}
+      <div className={`${cardCls} p-6`}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF]">
+              <i className="fa-solid fa-graduation-cap text-xl" />
+            </div>
+            <h3 className="text-lg font-semibold text-[#0A192F] dark:text-white">Educación Financiera</h3>
+          </div>
+          <button className="text-sm text-[#00E5FF] font-medium hover:underline">Ver más consejos</button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              icon: 'fa-solid fa-lightbulb', iconBg: 'bg-blue-500',
+              cardBg: 'bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/40 dark:to-blue-800/20',
+              border: 'border-blue-200 dark:border-blue-700/50',
+              title: 'Cómo mejorar tu historial crediticio',
+              text: 'Paga tus cuotas a tiempo y mantén un buen comportamiento de pago para acceder a mejores tasas.',
+            },
+            {
+              icon: 'fa-solid fa-chart-line', iconBg: 'bg-green-500',
+              cardBg: 'bg-linear-to-br from-green-50 to-green-100/50 dark:from-green-900/40 dark:to-green-800/20',
+              border: 'border-green-200 dark:border-green-700/50',
+              title: 'Gestiona tu endeudamiento',
+              text: 'No comprometas más del 30% de tus ingresos en el pago de deudas mensuales.',
+            },
+            {
+              icon: 'fa-solid fa-piggy-bank', iconBg: 'bg-yellow-500',
+              cardBg: 'bg-linear-to-br from-yellow-50 to-yellow-100/50 dark:from-yellow-900/40 dark:to-yellow-800/20',
+              border: 'border-yellow-200 dark:border-yellow-700/50',
+              title: 'Ahorra para emergencias',
+              text: 'Mantén un fondo de emergencia equivalente a 3-6 meses de tus gastos fijos.',
+            },
+          ].map(card => (
+            <div key={card.title} className={`p-4 rounded-xl ${card.cardBg} border ${card.border}`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-lg ${card.iconBg} flex items-center justify-center text-white shrink-0 mt-0.5`}>
+                  <i className={`${card.icon} text-sm`} />
+                </div>
+                <div>
+                  <h4 className="font-medium text-[#0A192F] dark:text-white text-sm mb-1.5">{card.title}</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{card.text}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Activity + Account Data */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent activity */}
+        <div className={`lg:col-span-2 ${cardCls} p-6`}>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-[#0A192F] dark:text-white">Actividad Reciente</h3>
+            <Link href="/loans" className="text-sm text-[#00E5FF] font-medium hover:underline">Ver todo</Link>
+          </div>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-16 bg-gray-100 dark:bg-[#0F172A] rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : recentActivity.length === 0 ? (
+            <div className="py-12 text-center">
+              <i className="fa-regular fa-folder-open text-4xl text-gray-300 dark:text-gray-600 mb-3" />
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No hay actividad reciente.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentActivity.map(loan => (
+                <Link
+                  key={loan.id}
+                  href={`/loans/${loan.id}`}
+                  className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors border border-transparent hover:border-[#E2E8F0] dark:hover:border-[#334155]"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0
+                      ${loan.status === 'PAID'
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                        : loan.status === 'PENDING'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400'
+                          : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
+                      }`}
+                    >
+                      <i className={`text-lg
+                        ${loan.status === 'PAID' ? 'fa-solid fa-check' : loan.status === 'PENDING' ? 'fa-solid fa-clock' : 'fa-solid fa-wallet'}`}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="text-[#0A192F] dark:text-white font-medium text-sm">
+                        Préstamo #{loan.id.substring(0, 8).toUpperCase()}
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(loan.createdAt)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm text-[#0A192F] dark:text-white">
+                      {formatCurrency(loan.amount)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{loan.status}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Account data */}
+        <div className="space-y-6">
+          {/* Pre-approval promo */}
+          {kycApproved && !activeLoan && (
+            <div className={`${cardCls} p-6 border border-[#D4AF37]/50 relative overflow-hidden bg-linear-to-br from-white dark:from-[#1E293B] to-yellow-50 dark:to-yellow-900/10`}>
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl" />
+              <div className="relative z-10">
+                <span className="inline-block px-2 py-0.5 bg-[#D4AF37]/10 text-yellow-800 dark:text-[#D4AF37] text-xs font-medium rounded mb-3 uppercase tracking-wider">
+                  Disponible
+                </span>
+                <h3 className="text-xl font-bold text-[#0A192F] dark:text-white mb-2">
+                  Solicita tu préstamo
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Estás verificado. Obtén hasta <strong className="text-[#0A192F] dark:text-[#D4AF37]">S/ 2,000</strong> con aprobación en minutos.
+                </p>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="w-full bg-[#D4AF37] text-[#0A192F] font-medium py-3 rounded-xl text-sm hover:bg-[#B8941F] transition-colors"
+                >
+                  Ver Oferta
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Account summary */}
+          <div className={`${cardCls} p-6`}>
+            <h3 className="text-base font-semibold text-[#0A192F] dark:text-white mb-4">Datos de Cuenta</h3>
+            <div className="space-y-3">
+              {[
+                { label: 'Titular', value: user ? `${user.firstName} ${user.lastName}` : '–' },
+                { label: 'Email', value: user?.email ?? '–' },
+                { label: 'Verificado', value: user?.emailVerified ? '✓ Email verificado' : 'Pendiente' },
+                { label: 'Estado KYC', value: kycApproved ? '✓ Identidad verificada' : 'Pendiente de verificación' },
+              ].map((item, i, arr) => (
+                <div key={item.label} className={`flex justify-between items-center ${i < arr.length - 1 ? 'pb-3 border-b border-gray-100 dark:border-white/6' : ''}`}>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{item.label}</span>
+                  <span className="text-sm text-gray-800 dark:text-gray-200 font-medium text-right max-w-[55%] truncate">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       <RequestLoanModal open={showModal} onClose={() => setShowModal(false)} />

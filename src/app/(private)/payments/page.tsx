@@ -129,32 +129,32 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#0A192F] dark:text-white mb-1">Pagos</h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-semibold text-[#0A192F] dark:text-white mb-1">Pagos</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Realiza pagos y consulta tu historial de transacciones.
           </p>
         </div>
         <Link
           href="/notifications"
-            className="w-10 h-10 rounded-xl bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors"
+          className="w-9 h-9 rounded-lg bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors"
         >
-          <i className="fa-regular fa-bell" />
+          <i className="fa-regular fa-bell text-sm" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* ── Left column (steps) ── */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-5">
 
           {/* Step 1 – Select loan */}
-          <section className={`${cardCls} p-6`}>
-            <h2 className="text-base font-semibold text-[#0A192F] dark:text-white flex items-center gap-2 mb-5">
-              <span className="w-6 h-6 rounded-full bg-[#0A192F]/10 dark:bg-[#D4AF37]/20 text-[#0A192F] dark:text-[#D4AF37] flex items-center justify-center text-xs font-semibold shrink-0">1</span>
+          <section className={`${cardCls} p-5`}>
+            <h2 className="text-sm font-semibold text-[#0A192F] dark:text-white flex items-center gap-2.5 mb-4">
+              <span className="w-5 h-5 rounded-full bg-[#0A192F]/10 dark:bg-[#D4AF37]/20 text-[#0A192F] dark:text-[#D4AF37] flex items-center justify-center text-[10px] font-semibold shrink-0">1</span>
               Seleccionar Préstamo
             </h2>
 
@@ -185,15 +185,15 @@ export default function PaymentsPage() {
                         setCustomAmount('')
                       }}
                     />
-                    <div className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between
+                    <div className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between
                       ${selectedLoanId === loan.id
                         ? 'border-[#0A192F] dark:border-[#D4AF37] bg-[#0A192F]/5 dark:bg-[#D4AF37]/5'
                         : 'border-gray-100 dark:border-white/6 bg-white dark:bg-[#0F172A] hover:bg-gray-50 dark:hover:bg-[#334155]/30'
                       }`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-[#00E5FF]/20 text-[#00E5FF] flex items-center justify-center shrink-0">
-                          <i className="fa-solid fa-bolt" />
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-[#00E5FF]/15 text-[#00E5FF] flex items-center justify-center shrink-0">
+                          <i className="fa-solid fa-bolt text-sm" />
                         </div>
                         <div>
                           <h4 className="text-[#0A192F] dark:text-white font-medium">Préstamo Solvo</h4>
@@ -228,9 +228,9 @@ export default function PaymentsPage() {
           </section>
 
           {/* Step 2 – Amount */}
-          <section className={`${cardCls} p-6`}>
-            <h2 className="text-base font-semibold text-[#0A192F] dark:text-white flex items-center gap-2 mb-5">
-              <span className="w-6 h-6 rounded-full bg-[#0A192F]/10 dark:bg-[#D4AF37]/20 text-[#0A192F] dark:text-[#D4AF37] flex items-center justify-center text-xs font-semibold shrink-0">2</span>
+          <section className={`${cardCls} p-5`}>
+            <h2 className="text-sm font-semibold text-[#0A192F] dark:text-white flex items-center gap-2.5 mb-4">
+              <span className="w-5 h-5 rounded-full bg-[#0A192F]/10 dark:bg-[#D4AF37]/20 text-[#0A192F] dark:text-[#D4AF37] flex items-center justify-center text-[10px] font-semibold shrink-0">2</span>
               Monto a Pagar
             </h2>
 
@@ -244,15 +244,15 @@ export default function PaymentsPage() {
                   checked={amountType === 'full'}
                   onChange={() => setAmountType('full')}
                 />
-                <div className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between
+                <div className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between
                   ${amountType === 'full'
                     ? 'border-[#0A192F] dark:border-[#D4AF37] bg-[#0A192F]/5 dark:bg-[#D4AF37]/5'
                     : 'border-gray-100 dark:border-white/6 bg-white dark:bg-[#0F172A] hover:bg-gray-50 dark:hover:bg-[#334155]/30'
                   }`}
                 >
                   <div>
-                    <h4 className="text-[#0A192F] dark:text-white font-medium">Pago Total de Cuota</h4>
-                    <p className="text-xl font-bold text-[#0A192F] dark:text-[#D4AF37] mt-1">
+                    <h4 className="text-sm font-medium text-[#0A192F] dark:text-white">Pago Total de Cuota</h4>
+                    <p className="text-sm font-semibold text-[#0A192F] dark:text-[#D4AF37] mt-0.5">
                       {selectedLoan ? formatCurrency(selectedLoan.installmentAmount) : '—'}
                     </p>
                   </div>
@@ -273,15 +273,15 @@ export default function PaymentsPage() {
                   checked={amountType === 'custom'}
                   onChange={() => setAmountType('custom')}
                 />
-                <div className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between
+                <div className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between
                   ${amountType === 'custom'
                     ? 'border-[#0A192F] dark:border-[#D4AF37] bg-[#0A192F]/5 dark:bg-[#D4AF37]/5'
                     : 'border-gray-100 dark:border-white/6 bg-white dark:bg-[#0F172A] hover:bg-gray-50 dark:hover:bg-[#334155]/30'
                   }`}
                 >
                   <div>
-                    <h4 className="text-[#0A192F] dark:text-white font-medium">Otro Monto</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pago parcial o adelantado</p>
+                    <h4 className="text-sm font-medium text-[#0A192F] dark:text-white">Otro Monto</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Pago parcial o adelantado</p>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
                     ${amountType === 'custom' ? 'border-[#0A192F] dark:border-[#D4AF37]' : 'border-gray-300 dark:border-gray-500'}`}
@@ -305,7 +305,7 @@ export default function PaymentsPage() {
                     placeholder="0.00"
                     value={customAmount}
                     onChange={e => setCustomAmount(e.target.value)}
-                    className="w-full bg-white dark:bg-[#0F172A] border border-gray-100 dark:border-white/6 rounded-xl py-3 pl-10 pr-4 text-gray-900 dark:text-white focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] transition-colors text-lg"
+                    className="w-full bg-white dark:bg-[#0F172A] border border-gray-100 dark:border-white/6 rounded-lg py-3 pl-10 pr-4 text-gray-900 dark:text-white focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] transition-colors text-lg"
                   />
                 </div>
                 <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-2 flex items-center gap-1">
@@ -317,15 +317,15 @@ export default function PaymentsPage() {
           </section>
 
           {/* Step 3 – Payment method */}
-          <section className={`${cardCls} p-6`}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-[#0A192F] dark:text-white flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#0A192F]/10 dark:bg-[#D4AF37]/20 text-[#0A192F] dark:text-[#D4AF37] flex items-center justify-center text-xs font-semibold shrink-0">3</span>
+          <section className={`${cardCls} p-5`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-[#0A192F] dark:text-white flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-[#0A192F]/10 dark:bg-[#D4AF37]/20 text-[#0A192F] dark:text-[#D4AF37] flex items-center justify-center text-[10px] font-semibold shrink-0">3</span>
                 Método de Pago
               </h2>
               {/* TODO: implement "add new card" flow */}
-              <button className="text-[#0A192F] dark:text-[#D4AF37] text-sm font-medium hover:underline transition-colors">
-                Agregar nuevo
+              <button className="text-[#0A192F] dark:text-[#D4AF37] text-xs font-medium hover:underline transition-colors">
+                + Agregar nuevo
               </button>
             </div>
 
@@ -339,19 +339,19 @@ export default function PaymentsPage() {
                     checked={selectedMethod === method.id}
                     onChange={() => setSelectedMethod(method.id)}
                   />
-                  <div className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between
+                  <div className={`p-3.5 rounded-lg border-2 transition-all flex items-center justify-between
                     ${selectedMethod === method.id
                       ? 'border-[#0A192F] dark:border-[#D4AF37] bg-[#0A192F]/5 dark:bg-[#D4AF37]/5'
                       : 'border-gray-100 dark:border-white/6 bg-white dark:bg-[#0F172A] hover:bg-gray-50 dark:hover:bg-[#334155]/30'
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-8 rounded flex items-center justify-center ${METHOD_LOGO_BG[method.id]}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-7 rounded flex items-center justify-center shrink-0 ${METHOD_LOGO_BG[method.id]}`}>
                         {method.logo}
                       </div>
                       <div>
-                        <h4 className="text-[#0A192F] dark:text-white font-medium">{method.label}</h4>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{method.desc}</p>
+                        <h4 className="text-sm font-medium text-[#0A192F] dark:text-white">{method.label}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{method.desc}</p>
                       </div>
                     </div>
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
@@ -369,15 +369,15 @@ export default function PaymentsPage() {
         </div>
 
         {/* ── Right column ── */}
-        <div className="space-y-6">
+        <div className="space-y-5">
 
           {/* Payment summary */}
-          <section className={`${cardCls} p-6`}>
-            <h3 className="text-lg font-bold text-[#0A192F] dark:text-white mb-6 border-b border-gray-100 dark:border-white/6 pb-4">
+          <section className={`${cardCls} p-5`}>
+            <h3 className="text-base font-semibold text-[#0A192F] dark:text-white mb-4 border-b border-gray-100 dark:border-white/6 pb-4">
               Resumen de Pago
             </h3>
 
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 mb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">Préstamo</span>
                 <span className="text-[#0A192F] dark:text-white font-medium text-right">
@@ -404,17 +404,17 @@ export default function PaymentsPage() {
               </div>
             </div>
 
-            <div className="border-t border-gray-100 dark:border-white/6 pt-4 mb-6">
+            <div className="border-t border-gray-100 dark:border-white/6 pt-3 mb-5">
               <div className="flex justify-between items-center">
-                <span className="text-[#0A192F] dark:text-white font-bold">Total a Pagar</span>
-                <span className="text-2xl font-bold text-[#0A192F] dark:text-[#D4AF37]">
+                <span className="text-sm font-semibold text-[#0A192F] dark:text-white">Total a Pagar</span>
+                <span className="text-xl font-semibold text-[#0A192F] dark:text-[#D4AF37]">
                   {paymentAmount > 0 ? formatCurrency(paymentAmount) : '—'}
                 </span>
               </div>
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm flex items-start gap-2">
+              <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm flex items-start gap-2">
                 <i className="fa-solid fa-circle-exclamation mt-0.5 shrink-0" />
                 {error}
               </div>
@@ -423,7 +423,7 @@ export default function PaymentsPage() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !selectedLoanId || paymentAmount <= 0}
-              className="w-full bg-[#0A192F] hover:bg-[#0A192F]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl flex justify-center items-center gap-2 mb-4 font-medium transition-all"
+              className="w-full bg-[#0A192F] hover:bg-[#0A192F]/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg flex justify-center items-center gap-2 mb-3 font-medium transition-all text-sm"
             >
               {isSubmitting ? (
                 <><i className="fa-solid fa-circle-notch fa-spin" /> Procesando...</>
@@ -434,14 +434,14 @@ export default function PaymentsPage() {
 
             <p className="text-xs text-gray-400 dark:text-gray-500 text-center flex items-center justify-center gap-1">
               <i className="fa-solid fa-shield-halved" />
-              Protegido por SBS - Cifrado 256-bit
+              Protegido por SBS · Cifrado 256-bit
             </p>
           </section>
 
           {/* Recent payments */}
-          <section className={`${cardCls} p-6`}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-[#0A192F] dark:text-white">Últimos Pagos</h3>
+          <section className={`${cardCls} p-5`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-[#0A192F] dark:text-white">Últimos Pagos</h3>
               {selectedLoanId && (
                 <Link
                   href={`/loans/${selectedLoanId}`}
@@ -464,20 +464,20 @@ export default function PaymentsPage() {
                   return (
                     <div
                       key={payment.id}
-                      className={`flex items-center justify-between p-3 rounded-xl border
+                      className={`flex items-center justify-between p-3 rounded-lg border
                         ${isFailed
                           ? 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30'
                           : 'bg-gray-50 dark:bg-[#0F172A] border-gray-100 dark:border-white/6'
                         }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0
                           ${isFailed
                             ? 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400'
                             : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                           }`}
                         >
-                          <i className={`fa-solid ${isFailed ? 'fa-xmark' : 'fa-check'}`} />
+                          <i className={`fa-solid text-xs ${isFailed ? 'fa-xmark' : 'fa-check'}`} />
                         </div>
                         <div>
                           <p className="text-[#0A192F] dark:text-white font-medium text-sm">
@@ -515,49 +515,49 @@ export default function PaymentsPage() {
       {/* Success modal */}
       {success && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className={`${cardCls} max-w-md w-full p-8 text-center relative`}>
+          <div className={`${cardCls} max-w-md w-full p-7 text-center relative`}>
             <button
               type="button"
               onClick={() => setSuccess(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-              title="Éxito"
+              title="Cerrar"
             >
-              <i className="fa-solid fa-xmark text-xl" />
+              <i className="fa-solid fa-xmark" />
             </button>
 
-            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto mb-6 text-4xl border-2 border-green-200 dark:border-green-800/50">
+            <div className="w-14 h-14 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto mb-5 text-2xl border border-green-200 dark:border-green-800/40">
               <i className="fa-solid fa-check" />
             </div>
 
-            <h2 className="text-2xl font-bold text-[#0A192F] dark:text-white mb-2">¡Pago Exitoso!</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
+            <h2 className="text-xl font-semibold text-[#0A192F] dark:text-white mb-1.5">¡Pago Exitoso!</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
               Tu pago ha sido procesado correctamente y aplicado a tu préstamo.
             </p>
 
-            <div className="bg-gray-50 dark:bg-[#0F172A] rounded-xl p-4 mb-8 text-left space-y-2 border border-gray-100 dark:border-white/6">
+            <div className="bg-gray-50 dark:bg-[#0F172A] rounded-lg p-4 mb-6 text-left space-y-2.5 border border-gray-100 dark:border-white/6">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Referencia:</span>
+                <span className="text-gray-500 dark:text-gray-400">Referencia</span>
                 <span className="text-[#0A192F] dark:text-white font-medium">#{success.id.substring(0, 12).toUpperCase()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Fecha:</span>
+                <span className="text-gray-500 dark:text-gray-400">Fecha</span>
                 <span className="text-[#0A192F] dark:text-white font-medium">{formatDate(success.paidAt)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Monto:</span>
-                <span className="text-[#0A192F] dark:text-[#D4AF37] font-bold">{formatCurrency(success.amount)}</span>
+                <span className="text-gray-500 dark:text-gray-400">Monto</span>
+                <span className="text-[#0A192F] dark:text-[#D4AF37] font-semibold">{formatCurrency(success.amount)}</span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               <Link
                 href="/dashboard"
-                className="w-full bg-[#0A192F] text-white py-3 rounded-xl text-center font-medium hover:bg-[#0A192F]/90 transition-colors"
+                className="w-full bg-[#0A192F] text-white py-2.5 rounded-lg text-center text-sm font-medium hover:bg-[#0A192F]/90 transition-colors"
               >
                 Ir al Dashboard
               </Link>
-              <button className="w-full bg-transparent border border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors flex justify-center items-center gap-2 font-medium">
-                <i className="fa-solid fa-download" /> Descargar Recibo
+              <button className="w-full bg-transparent border border-gray-100 dark:border-white/6 text-gray-600 dark:text-gray-300 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors flex justify-center items-center gap-2 font-medium">
+                <i className="fa-solid fa-download text-xs" /> Descargar Recibo
               </button>
             </div>
           </div>

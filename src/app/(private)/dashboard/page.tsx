@@ -52,10 +52,12 @@ export default function DashboardPage() {
           </Link>
           {kycApproved && !activeLoan && (
             <button
+              type="button"
               onClick={() => setShowModal(true)}
-              className="bg-[#D4AF37] text-[#0A192F] font-medium px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-[#B8941F] transition-colors"
+              className="bg-[#D4AF37] text-[#0A192F] font-medium px-6 py-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-[#B8941F] transition-colors"
             >
-              <i className="fa-solid fa-plus" />
+              <i className="fa-solid fa-plus text-xs" />
+              {' '}
               Nuevo Préstamo
             </button>
           )}
@@ -77,7 +79,7 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-        <button className="text-sm text-[#00E5FF] font-medium hover:text-[#0A192F] dark:hover:text-[#D4AF37] transition-colors shrink-0">
+        <button type="button" className="text-sm text-[#00E5FF] font-medium hover:text-[#0A192F] dark:hover:text-[#D4AF37] transition-colors shrink-0">
           Ver detalles
         </button>
       </div>
@@ -159,6 +161,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <button
+                  type="button"
                   onClick={() => kycApproved && setShowModal(true)}
                   disabled={!kycApproved}
                   className="w-full bg-[#D4AF37] text-[#0A192F] py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
@@ -397,8 +400,9 @@ export default function DashboardPage() {
                   Estás verificado. Obtén hasta <strong className="text-[#0A192F] dark:text-[#D4AF37]">S/ 2,000</strong> con aprobación en minutos.
                 </p>
                 <button
+                  type="button"
                   onClick={() => setShowModal(true)}
-                  className="w-full bg-[#D4AF37] text-[#0A192F] font-medium py-3 rounded-xl text-sm hover:bg-[#B8941F] transition-colors"
+                  className="w-full bg-[#D4AF37] text-[#0A192F] font-medium py-3 rounded-lg text-sm cursor-pointer hover:bg-[#B8941F] transition-colors"
                 >
                   Ver Oferta
                 </button>

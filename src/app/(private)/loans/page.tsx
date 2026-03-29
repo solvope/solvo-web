@@ -37,7 +37,7 @@ function statusBadge(status: string) {
   return <span className="px-2.5 py-0.5 bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs font-medium rounded-full">{status}</span>
 }
 
-function LoanCard({ loan }: { loan: Loan }) {
+function LoanCard({ loan }: Readonly<{ loan: Loan }>) {
   const isActive = ACTIVE_STATUSES.includes(loan.status)
   const isReview = REVIEW_STATUSES.includes(loan.status)
   const isPaid = loan.status === 'PAID'
@@ -201,9 +201,10 @@ export default function LoansPage() {
           </Link>
           <Link
             href="/request-loan"
-            className="bg-[#D4AF37] text-[#0A192F] font-medium text-sm px-4 py-2 rounded-md flex items-center gap-1.5 hover:bg-[#B8941F] transition-colors"
+            className="bg-[#D4AF37] text-[#0A192F] font-medium px-6 py-2 rounded-lg cursor-pointer flex items-center gap-2 hover:bg-[#B8941F] transition-colors"
           >
             <i className="fa-solid fa-plus text-xs" />
+            {' '}
             Nuevo Préstamo
           </Link>
         </div>

@@ -314,7 +314,7 @@ export default function LoansPage() {
             <p className="text-sm text-gray-300">Nuestro equipo de soporte está disponible 24/7 en todo el Perú.</p>
           </div>
         </div>
-        <button className="w-full md:w-auto px-6 py-2.5 rounded-xl border border-white/20 text-white hover:bg-white/10 transition-colors text-sm font-medium z-10 flex items-center justify-center gap-2">
+        <button className="w-full md:w-auto px-6 py-2.5 rounded-lg cursor-pointer border border-white/20 text-white hover:bg-white/10 transition-colors text-sm font-medium z-10 flex items-center justify-center gap-2">
           Contactar Soporte
           <i className="fa-solid fa-arrow-right text-xs" />
         </button>

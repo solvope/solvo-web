@@ -134,7 +134,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="flex justify-between items-center bg-white/10 rounded-xl p-3">
+              <div className="flex justify-between items-center bg-white/10 rounded-lg p-3">
                 <span className="text-gray-200 text-sm font-medium">
                   {activeLoan ? 'Préstamo activo' : 'Sin préstamos activos'}
                 </span>
@@ -145,16 +145,16 @@ export default function DashboardPage() {
                 )}
               </div>
               {activeLoan ? (
-                <div className="flex gap-3">
+                <div className="flex gap-2.5">
                   <Link
                     href={`/loans/${activeLoan.id}/pay`}
-                    className="flex-1 bg-[#D4AF37] text-[#0A192F] py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors text-center text-sm"
+                    className="flex-1 bg-[#D4AF37] text-[#0A192F] py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-center text-sm"
                   >
                     Pagar Ahora
                   </Link>
                   <Link
                     href={`/loans/${activeLoan.id}`}
-                    className="w-12 bg-white/10 text-white py-3 rounded-xl font-medium hover:bg-white/20 transition-colors flex items-center justify-center"
+                    className="w-12 bg-white/10 text-white py-3 rounded-lg font-medium hover:bg-white/20 transition-colors flex items-center justify-center"
                   >
                     <i className="fa-solid fa-arrow-right text-sm" />
                   </Link>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity + Account Data */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
         {/* Recent activity */}
         <div className={`lg:col-span-2 ${cardCls} p-6`}>
           <div className="flex justify-between items-center mb-6">

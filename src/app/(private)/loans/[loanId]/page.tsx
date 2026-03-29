@@ -417,8 +417,8 @@ export default function LoanDetailPage() {
                   {([
                     { label: 'Monto solicitado', value: formatCurrency(loan.amount), highlight: true },
                     { label: 'Monto neto recibido', value: formatCurrency(loan.netDisbursed), highlight: true },
-                    { label: 'Tasa de Interés (TEA)', value: `${loan.interestRate}%` },
-                    { label: 'TCEA', value: `${loan.tcea}%` },
+                    { label: 'Tasa de Interés (TEA)', value: `${loan.interestRate * 100}%` },
+                    { label: 'TCEA', value: `${loan.tcea * 100}%` },
                     { label: 'Total de interés', value: formatCurrency(loan.totalInterest) },
                     { label: 'Plazo', value: `${loan.termDays} días` },
                     { label: 'Nº cuotas', value: `${loan.numInstallments} cuota${loan.numInstallments > 1 ? 's' : ''}` },
@@ -528,11 +528,11 @@ export default function LoanDetailPage() {
           </div>
         </div>
         <div className="flex gap-3 w-full md:w-auto shrink-0">
-          <button className="flex-1 md:flex-none px-5 py-2 rounded-lg border border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors text-sm font-medium flex items-center justify-center gap-2">
+          <button className="flex-1 md:flex-none px-5 py-2 rounded-lg cursor-pointer border border-gray-100 dark:border-white/6 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors text-sm font-medium flex items-center justify-center gap-2">
             <i className="fa-brands fa-whatsapp text-green-500" />
             Chat
           </button>
-          <button className="flex-1 md:flex-none px-5 py-2 rounded-lg bg-[#0A192F] dark:bg-[#D4AF37] text-white dark:text-[#0A192F] hover:bg-[#0A192F]/90 dark:hover:bg-[#B8941F] transition-colors text-sm font-medium">
+          <button className="flex-1 md:flex-none px-5 py-2 rounded-lg cursor-pointer bg-[#0A192F] dark:bg-[#D4AF37] text-white dark:text-[#0A192F] hover:bg-[#0A192F]/90 dark:hover:bg-[#B8941F] transition-colors text-sm font-medium">
             Llamar a Soporte
           </button>
         </div>

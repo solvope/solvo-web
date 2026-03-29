@@ -14,7 +14,7 @@ interface LoanState {
   loadMyLoans: () => Promise<void>
   loadLoanDetails: (loanId: string) => Promise<void>
   loadEarlyPayoffQuote: (loanId: string) => Promise<void>
-  requestLoan: (dto: { amount: number; termDays: number }) => Promise<Loan>
+  requestLoan: (dto: { amount: number; productType: string; paymentFrequency: string; numInstallments: number }) => Promise<Loan>
   signLoan: (loanId: string) => Promise<void>
   payLoan: (loanId: string, dto: { amount: number; method: string; reference?: string }) => Promise<void>
   partialPayLoan: (loanId: string, dto: { amount: number; method: string; reference?: string }) => Promise<void>
@@ -69,7 +69,7 @@ export const useLoanStore = create<LoanState>((set, get) => ({
     }
   },
 
-  requestLoan: async (dto: { amount: number; termDays: number }) => {
+  requestLoan: async (dto: { amount: number; productType: string; paymentFrequency: string; numInstallments: number }) => {
     const loan = await loanRepository.requestLoan(dto)
     await get().loadMyLoans()
     return loan

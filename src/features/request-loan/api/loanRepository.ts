@@ -5,6 +5,7 @@ export interface SimulateDTO {
   amount: number
   productType: string
   paymentFrequency: string
+  numInstallments: number
 }
 
 export interface SimulationResult {
@@ -30,7 +31,7 @@ export const loanRepository = {
     const { data } = await apiClient.post('/loans/simulate', dto)
     return data.data
   },
-  async requestLoan(dto: { amount: number; termDays: number }): Promise<Loan> {
+  async requestLoan(dto: { amount: number; productType: string; paymentFrequency: string; numInstallments: number }): Promise<Loan> {
     const { data } = await apiClient.post('/loans', dto)
     return data.data
   },

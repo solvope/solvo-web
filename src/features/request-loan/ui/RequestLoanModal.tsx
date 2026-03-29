@@ -21,15 +21,15 @@ interface Props {
 
 const PRODUCT_OPTIONS = [
   { value: 'EXPRESS', label: 'Express', sublabel: '1 cuota' },
-  { value: 'FLEX',    label: 'Flex',    sublabel: '2 cuotas' },
+  { value: 'FLEX', label: 'Flex', sublabel: '2 cuotas' },
 ]
 
 const TOOLTIPS = {
-  techFee:         'Cubre los costos de la plataforma digital, verificación de identidad y procesamiento de tu solicitud.',
+  techFee: 'Cubre los costos de la plataforma digital, verificación de identidad y procesamiento de tu solicitud.',
   disbursementFee: 'Cubre la transferencia del dinero a tu cuenta. Se descuenta del monto que recibes.',
-  maintenanceFee:  'Cubre la administración de tu cuenta durante la vigencia del préstamo. Se cobra por cada cuota.',
-  igv:             'Impuesto General a las Ventas (18%) aplicado sobre las comisiones. Los intereses están exonerados de IGV según Ley N° 28194.',
-  tcea:            'Tasa de Costo Efectivo Anual. Refleja el costo total del préstamo incluyendo intereses y comisiones.',
+  maintenanceFee: 'Cubre la administración de tu cuenta durante la vigencia del préstamo. Se cobra por cada cuota.',
+  igv: 'Impuesto General a las Ventas (18%) aplicado sobre las comisiones. Los intereses están exonerados de IGV según Ley N° 28194.',
+  tcea: 'Tasa de Costo Efectivo Anual. Refleja el costo total del préstamo incluyendo intereses y comisiones.',
 }
 
 const requestLoanSchema = z.object({
@@ -51,7 +51,7 @@ export function RequestLoanModal({ open, onClose }: Props) {
     defaultValues: { amount: 500, productType: 'EXPRESS' },
   })
 
-  const amount      = form.watch('amount')
+  const amount = form.watch('amount')
   const productType = form.watch('productType')
 
   const runSimulation = useCallback(async (amt: number, prod: string) => {
@@ -62,6 +62,7 @@ export function RequestLoanModal({ open, onClose }: Props) {
         amount: amt,
         productType: prod,
         paymentFrequency: 'MENSUAL',
+        numInstallments: prod === 'FLEX' ? 2 : 1,
       })
       setSimulation(result)
     } catch {
@@ -80,7 +81,7 @@ export function RequestLoanModal({ open, onClose }: Props) {
 
   const onSubmit = async (values: RequestLoanInput) => {
     try {
-      await requestLoan({ amount: values.amount, termDays: values.productType === 'FLEX' ? 60 : 30 })
+      await requestLoan({ amount: values.amount, productType: values.productType, paymentFrequency: 'MENSUAL', numInstallments: values.productType === 'FLEX' ? 2 : 1 })
       toast.success('¡Solicitud enviada! Te notificaremos cuando sea aprobada.')
       form.reset()
       onClose()

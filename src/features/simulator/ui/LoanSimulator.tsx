@@ -64,9 +64,9 @@ function range(min: number, max: number): number[] {
 
 export function LoanSimulator() {
   const [product, setProduct] = useState<LoanProductType>('EXPRESS')
-  const [amount, setAmount] = useState(PRODUCT_CONFIG.EXPRESS.defaultAmount)
+  const [amount, setAmount] = useState<number>(PRODUCT_CONFIG.EXPRESS.defaultAmount)
   const [frequency, setFrequency] = useState<PaymentFrequency>(PRODUCT_CONFIG.EXPRESS.defaultFrequency)
-  const [installments, setInstallments] = useState(PRODUCT_CONFIG.EXPRESS.defaultInstallments)
+  const [installments, setInstallments] = useState<number>(PRODUCT_CONFIG.EXPRESS.defaultInstallments)
 
   const [result, setResult] = useState<SimulationResult | null>(null)
   const [loading, setLoading] = useState(false)

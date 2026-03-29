@@ -1,12 +1,13 @@
 import { apiClient } from '@/shared/api/client'
 
-export type LoanProductType = 'EXPRESS' | 'FLEX'
+export type LoanProductType = 'EXPRESS' | 'FLEX' | 'PLUS'
 export type PaymentFrequency = 'QUINCENAL' | 'MENSUAL'
 
 export interface SimulateParams {
   amount: number
   productType: LoanProductType
   paymentFrequency: PaymentFrequency
+  numInstallments: number
 }
 
 export interface ScheduleItem {

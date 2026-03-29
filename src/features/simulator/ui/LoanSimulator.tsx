@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from 'next-themes'
-import { Loader2, Zap, TrendingUp, Info } from 'lucide-react'
+import { Loader2, Zap, TrendingUp, Star, Info } from 'lucide-react'
 import Link from 'next/link'
 import { simulate, type SimulationResult, type LoanProductType, type PaymentFrequency } from '../api/simulatorRepository'
 import {
@@ -13,22 +13,61 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-// ─── Config ─────────────────────────────────────────────────────────────────
+// ─── Config por producto ──────────────────────────────────────────────────────
 
-const MIN_AMOUNT = 200
-const MAX_AMOUNT = 500
 const STEP = 25
+
+const PRODUCT_CONFIG = {
+  EXPRESS: {
+    minAmount: 100,
+    maxAmount: 500,
+    minInstallments: 1,
+    maxInstallments: 1,
+    frequencies: ['QUINCENAL', 'MENSUAL'] as PaymentFrequency[],
+    defaultInstallments: 1,
+    defaultFrequency: 'MENSUAL' as PaymentFrequency,
+    defaultAmount: 200,
+  },
+  FLEX: {
+    minAmount: 100,
+    maxAmount: 500,
+    minInstallments: 2,
+    maxInstallments: 6,
+    frequencies: ['QUINCENAL', 'MENSUAL'] as PaymentFrequency[],
+    defaultInstallments: 3,
+    defaultFrequency: 'MENSUAL' as PaymentFrequency,
+    defaultAmount: 300,
+  },
+  PLUS: {
+    minAmount: 550,
+    maxAmount: 2000,
+    minInstallments: 7,
+    maxInstallments: 12,
+    frequencies: ['MENSUAL'] as PaymentFrequency[],
+    defaultInstallments: 9,
+    defaultFrequency: 'MENSUAL' as PaymentFrequency,
+    defaultAmount: 1000,
+  },
+} as const
 
 function fmt(n: number) {
   return n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+function range(min: number, max: number): number[] {
+  const result: number[] = []
+  for (let i = min; i <= max; i++) result.push(i)
+  return result
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function LoanSimulator() {
-  const [amount, setAmount] = useState(200)
   const [product, setProduct] = useState<LoanProductType>('EXPRESS')
-  const [frequency, setFrequency] = useState<PaymentFrequency>('MENSUAL')
+  const [amount, setAmount] = useState(PRODUCT_CONFIG.EXPRESS.defaultAmount)
+  const [frequency, setFrequency] = useState<PaymentFrequency>(PRODUCT_CONFIG.EXPRESS.defaultFrequency)
+  const [installments, setInstallments] = useState(PRODUCT_CONFIG.EXPRESS.defaultInstallments)
+
   const [result, setResult] = useState<SimulationResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,11 +76,27 @@ export function LoanSimulator() {
 
   useEffect(() => setMounted(true), [])
 
+  const cfg = PRODUCT_CONFIG[product]
+
+  // When product changes, reset controls to product defaults
+  const handleProductChange = (p: LoanProductType) => {
+    const c = PRODUCT_CONFIG[p]
+    setProduct(p)
+    setAmount(c.defaultAmount)
+    setFrequency(c.defaultFrequency)
+    setInstallments(c.defaultInstallments)
+  }
+
   const runSimulation = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await simulate({ amount, productType: product, paymentFrequency: frequency })
+      const data = await simulate({
+        amount,
+        productType: product,
+        paymentFrequency: frequency,
+        numInstallments: installments,
+      })
       setResult(data)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al calcular')
@@ -49,23 +104,20 @@ export function LoanSimulator() {
     } finally {
       setLoading(false)
     }
-  }, [amount, product, frequency])
+  }, [amount, product, frequency, installments])
 
   useEffect(() => {
     const timer = setTimeout(runSimulation, 500)
     return () => clearTimeout(timer)
   }, [runSimulation])
 
-  const numInstallments = product === 'EXPRESS' ? 1 : 2
-  const freqLabel = frequency === 'MENSUAL' ? 'mensual' : 'quincenal'
   const isDark = mounted && resolvedTheme === 'dark'
   const fillColor = isDark ? '#D4AF37' : '#0A192F'
   const trackColor = isDark ? 'rgba(255,255,255,0.12)' : '#E5E7EB'
-  const fillPct = ((amount - MIN_AMOUNT) / (MAX_AMOUNT - MIN_AMOUNT)) * 100
+  const fillPct = ((amount - cfg.minAmount) / (cfg.maxAmount - cfg.minAmount)) * 100
   const rangeStyle = { background: `linear-gradient(to right, ${fillColor} ${fillPct}%, ${trackColor} ${fillPct}%)` }
-  const totalFees = result
-    ? result.techFee + result.maintenanceFeeTotal + result.igvAmount
-    : null
+  const totalFees = result ? result.techFee + result.maintenanceFeeTotal + result.igvAmount : null
+  const freqLabel = frequency === 'MENSUAL' ? 'mensual' : 'quincenal'
 
   return (
     <>
@@ -79,30 +131,52 @@ export function LoanSimulator() {
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
               Producto
             </label>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => setProduct('EXPRESS')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${product === 'EXPRESS'
-                  ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#0A192F] dark:text-white'
-                  : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#00E5FF] hover:text-[#00E5FF]'
-                  }`}
+                onClick={() => handleProductChange('EXPRESS')}
+                className={`flex-1 py-3 px-3 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                  product === 'EXPRESS'
+                    ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#0A192F] dark:text-white'
+                    : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#00E5FF] hover:text-[#00E5FF]'
+                }`}
               >
-                <Zap className="h-4 w-4 text-[#00E5FF]" />
+                <Zap className="h-4 w-4 text-[#00E5FF] shrink-0" />
                 Express
               </button>
               <button
                 type="button"
-                onClick={() => setProduct('FLEX')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${product === 'FLEX'
-                  ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#0A192F] dark:text-white'
-                  : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#D4AF37] hover:text-[#D4AF37]'
-                  }`}
+                onClick={() => handleProductChange('FLEX')}
+                className={`flex-1 py-3 px-3 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                  product === 'FLEX'
+                    ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#0A192F] dark:text-white'
+                    : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#D4AF37] hover:text-[#D4AF37]'
+                }`}
               >
-                <TrendingUp className="h-4 w-4" />
+                <TrendingUp className="h-4 w-4 shrink-0" />
                 Flex
               </button>
+              <button
+                type="button"
+                onClick={() => handleProductChange('PLUS')}
+                className={`flex-1 py-3 px-3 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                  product === 'PLUS'
+                    ? 'border-purple-400 bg-purple-400/10 text-[#0A192F] dark:text-white'
+                    : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-purple-400 hover:text-purple-400'
+                }`}
+              >
+                <Star className="h-4 w-4 shrink-0" />
+                Plus
+              </button>
             </div>
+
+            {/* Plus badge */}
+            {product === 'PLUS' && (
+              <p className="text-xs text-purple-400 dark:text-purple-300 mt-2 flex items-center gap-1.5">
+                <i className="fa-solid fa-lock text-[10px]" />
+                Disponible para clientes con 10+ préstamos pagados
+              </p>
+            )}
           </div>
 
           {/* Monto */}
@@ -118,7 +192,9 @@ export function LoanSimulator() {
             <input
               type="range"
               title="Slider de monto"
-              min={MIN_AMOUNT} max={MAX_AMOUNT} step={STEP}
+              min={cfg.minAmount}
+              max={cfg.maxAmount}
+              step={STEP}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
               style={rangeStyle}
@@ -145,8 +221,8 @@ export function LoanSimulator() {
                 [&::-moz-range-thumb]:cursor-pointer"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>S/ {MIN_AMOUNT}</span>
-              <span>S/ {MAX_AMOUNT}</span>
+              <span>S/ {cfg.minAmount}</span>
+              <span>S/ {cfg.maxAmount}</span>
             </div>
           </div>
 
@@ -156,30 +232,52 @@ export function LoanSimulator() {
               <label htmlFor="frequency" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 Frecuencia
               </label>
-              <Select id="frequency" value={frequency} onValueChange={(val) => setFrequency(val as PaymentFrequency)}>
-                <SelectTrigger className="w-full h-10 rounded-md border-gray-200 dark:border-white/10 bg-white dark:bg-[#0F172A] text-gray-700 dark:text-white px-3 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="QUINCENAL">Quincenal</SelectItem>
-                  <SelectItem value="MENSUAL">Mensual</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* PLUS: solo mensual — mostrar como texto fijo */}
+              {product === 'PLUS' ? (
+                <div className="w-full h-10 rounded-md border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#0F172A] flex items-center px-3 text-sm text-gray-500 dark:text-gray-400 opacity-70">
+                  Mensual
+                </div>
+              ) : (
+                <Select
+                  value={frequency}
+                  onValueChange={(val) => setFrequency(val as PaymentFrequency)}
+                >
+                  <SelectTrigger className="w-full h-10 rounded-md border-gray-200 dark:border-white/10 bg-white dark:bg-[#0F172A] text-gray-700 dark:text-white px-3 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="QUINCENAL">Quincenal</SelectItem>
+                    <SelectItem value="MENSUAL">Mensual</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div>
               <label htmlFor="numInstallments" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 Cuotas
               </label>
-              <Select id="numInstallments" value={String(numInstallments)} disabled>
-                <SelectTrigger className="w-full h-10 rounded-md border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#0F172A] text-gray-500 dark:text-gray-400 px-3 text-sm opacity-70">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={String(numInstallments)}>
-                    {numInstallments} cuota{numInstallments > 1 ? 's' : ''}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              {/* EXPRESS: solo 1 cuota, sin selector */}
+              {product === 'EXPRESS' ? (
+                <div className="w-full h-10 rounded-md border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#0F172A] flex items-center px-3 text-sm text-gray-500 dark:text-gray-400 opacity-70">
+                  1 cuota
+                </div>
+              ) : (
+                <Select
+                  value={String(installments)}
+                  onValueChange={(val) => setInstallments(Number(val))}
+                >
+                  <SelectTrigger className="w-full h-10 rounded-md border-gray-200 dark:border-white/10 bg-white dark:bg-[#0F172A] text-gray-700 dark:text-white px-3 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {range(cfg.minInstallments, cfg.maxInstallments).map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n} cuota{n > 1 ? 's' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </div>
@@ -215,6 +313,10 @@ export function LoanSimulator() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Comisiones e IGV</span>
                     <span className="font-semibold">S/ {fmt(totalFees!)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Plazo</span>
+                    <span className="font-semibold">{result.numInstallments} cuota{result.numInstallments > 1 ? 's' : ''} {freqLabel}{result.numInstallments > 1 ? 's' : ''}</span>
                   </div>
                   <div className="w-full h-px bg-gray-700 my-2" />
                   <div className="flex justify-between items-center text-lg">
@@ -252,7 +354,7 @@ export function LoanSimulator() {
         <p className="max-w-2xl">
           Simulación referencial. Los valores reales, incluyendo TEA y TCEA, se calcularán en base
           a tu perfil crediticio y serán detallados en tu propuesta oficial antes de aceptar el
-          préstamo. Regulado por la SBS.
+          préstamo. Solvo Plus requiere mínimo 10 préstamos cancelados. Regulado por la SBS.
         </p>
       </div>
     </>

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { LoanSimulator } from '@/features/simulator/ui/LoanSimulator'
-import { LandingThemeToggle } from '@/shared/ui/landing-theme-toggle'
+import { LandingHeader } from '@/shared/ui/landing-header'
 import { CURRENT_YEAR } from '@/shared/lib/constants'
 
 export default function LandingPage() {
@@ -8,38 +8,7 @@ export default function LandingPage() {
     <div className="bg-[#F8FAFC] dark:bg-[#0F172A] w-full min-h-screen m-0 p-0 text-gray-800 dark:text-[#F1F5F9] antialiased overflow-x-hidden flex flex-col transition-colors duration-300 ease-in-out">
 
       {/* ═══════════════════════════ HEADER ═══════════════════════════════════ */}
-      <header className="w-full py-5 px-4 sm:px-8 lg:px-16 xl:px-20 flex justify-between items-center fixed top-0 left-0 z-50 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-md border-b border-gray-200/50 dark:border-[#334155]/50">
-
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-linear-to-br from-[#0A192F] to-[#0A192F]/80 rounded-lg flex items-center justify-center text-[#D4AF37]">
-            <i className="fa-solid fa-bolt text-sm" />
-          </div>
-          <span className="text-lg font-semibold text-[#0A192F] dark:hidden tracking-tight">Solvo</span>
-          <span className="text-lg font-semibold text-white hidden dark:block tracking-tight">Solvo</span>
-        </div>
-
-        {/* Nav */}
-        <div className="flex items-center gap-4 sm:gap-5">
-          <Link href="#nosotros" className="text-sm text-gray-500 hover:text-[#0A192F] transition-colors hidden md:block dark:hidden">Nosotros</Link>
-          <Link href="#nosotros" className="text-sm text-gray-400 hover:text-[#D4AF37] transition-colors hidden dark:md:block">Nosotros</Link>
-
-          <Link href="#ayuda" className="text-sm text-gray-500 hover:text-[#0A192F] transition-colors hidden md:block dark:hidden">Ayuda</Link>
-          <Link href="#ayuda" className="text-sm text-gray-400 hover:text-[#D4AF37] transition-colors hidden dark:md:block">Ayuda</Link>
-
-          <LandingThemeToggle />
-
-          <div className="w-px h-4 bg-gray-200 hidden md:block dark:hidden" />
-          <div className="w-px h-4 bg-[#334155] hidden dark:md:block" />
-
-          <Link href="/login" className="px-4 py-1.5 text-sm font-medium text-[#0A192F] border border-[#0A192F] rounded-lg hover:bg-[#0A192F] hover:text-white transition-all dark:hidden">
-            Iniciar sesión
-          </Link>
-          <Link href="/login" className="px-4 py-1.5 text-sm font-medium text-[#D4AF37] border border-[#D4AF37] rounded-lg hover:bg-[#D4AF37] hover:text-[#0A192F] transition-all hidden dark:block">
-            Iniciar sesión
-          </Link>
-        </div>
-      </header>
+      <LandingHeader />
 
       {/* ═══════════════════════════ MAIN ═════════════════════════════════════ */}
       <main className="grow w-full flex flex-col pt-20">
@@ -175,11 +144,11 @@ export default function LandingPage() {
 
               {/* Discover link */}
               <div className="mt-6">
-                <Link href="#como-funciona" className="inline-flex items-center gap-2 text-[#0A192F] dark:hidden font-medium hover:underline group text-sm">
+                <Link href="#como-funciona" className="inline-flex items-center gap-2 text-[#0A192F] dark:hidden font-medium group text-sm">
                   <i className="fa-regular fa-circle-play text-lg group-hover:scale-110 transition-transform text-[#00E5FF]" />
                   Descubre cómo funciona
                 </Link>
-                <Link href="#como-funciona" className="hidden dark:inline-flex items-center gap-2 text-[#D4AF37] font-medium hover:underline group text-sm">
+                <Link href="#como-funciona" className="hidden dark:inline-flex items-center gap-2 text-[#D4AF37] font-medium group text-sm">
                   <i className="fa-regular fa-circle-play text-lg group-hover:scale-110 transition-transform text-[#00E5FF]" />
                   Descubre cómo funciona
                 </Link>
@@ -188,7 +157,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right Column — Light */}
-          <div className="w-full lg:w-1/2 relative flex items-center justify-center p-6 sm:p-12 lg:p-16 overflow-hidden dark:hidden bg-linear-to-br from-gray-50 to-gray-100">
+          <div className="w-full lg:w-1/2 relative flex flex-col items-center justify-center p-6 sm:p-12 lg:p-16 overflow-hidden dark:hidden bg-linear-to-br from-gray-50 to-gray-100">
             <div className="absolute top-0 right-0 w-full h-full bg-linear-to-br from-[#0A192F]/5 via-transparent to-[#00E5FF]/5 rounded-bl-[120px]" />
 
             <div className="relative w-full max-w-xl aspect-4/5 rounded-2xl overflow-hidden shadow-xl z-10">
@@ -227,17 +196,15 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="absolute bottom-8 w-full text-center px-6">
-              <p className="text-xs text-gray-500 font-semibold flex items-center justify-center gap-3 flex-wrap">
-                <span className="flex items-center gap-1.5"><i className="fa-solid fa-lock" /> Datos protegidos por ley</span>
-                <span>•</span>
-                <span className="flex items-center gap-1.5"><i className="fa-solid fa-building-columns" /> Regulado por SBS</span>
-              </p>
-            </div>
+            <p className="mt-5 text-xs text-gray-500 font-medium flex items-center justify-center gap-3 flex-wrap relative z-10">
+              <span className="flex items-center gap-1.5"><i className="fa-solid fa-lock" /> Datos protegidos por ley</span>
+              <span>•</span>
+              <span className="flex items-center gap-1.5"><i className="fa-solid fa-building-columns" /> Regulado por SBS</span>
+            </p>
           </div>
 
           {/* Right Column — Dark */}
-          <div className="w-full lg:w-1/2 relative items-center justify-center p-6 sm:p-12 lg:p-16 overflow-hidden hidden dark:flex bg-linear-to-br from-[#0F172A] to-[#1E293B]">
+          <div className="w-full lg:w-1/2 relative flex-col items-center justify-center p-6 sm:p-12 lg:p-16 overflow-hidden hidden dark:flex bg-linear-to-br from-[#0F172A] to-[#1E293B]">
             <div className="absolute top-0 right-0 w-full h-full bg-linear-to-br from-[#00E5FF]/10 via-transparent to-[#D4AF37]/5 rounded-bl-[120px]" />
 
             <div className="relative w-full max-w-xl aspect-4/5 rounded-2xl overflow-hidden shadow-xl border border-white/8 z-10">
@@ -273,13 +240,11 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="absolute bottom-8 w-full text-center px-6">
-              <p className="text-xs text-gray-400 font-semibold flex items-center justify-center gap-3 flex-wrap">
-                <span className="flex items-center gap-1.5"><i className="fa-solid fa-lock" /> Datos protegidos por ley</span>
-                <span>•</span>
-                <span className="flex items-center gap-1.5"><i className="fa-solid fa-building-columns" /> Regulado por SBS</span>
-              </p>
-            </div>
+            <p className="mt-5 text-xs text-gray-400 font-medium flex items-center justify-center gap-3 flex-wrap relative z-10">
+              <span className="flex items-center gap-1.5"><i className="fa-solid fa-lock" /> Datos protegidos por ley</span>
+              <span>•</span>
+              <span className="flex items-center gap-1.5"><i className="fa-solid fa-building-columns" /> Regulado por SBS</span>
+            </p>
           </div>
         </section>
 
@@ -359,7 +324,7 @@ export default function LandingPage() {
 
         {/* ─── SIMULADOR ────────────────────────────────────────────────────── */}
         <section id="simulador" className="w-full py-20 px-6 sm:px-10 lg:px-16 xl:px-24 bg-white dark:bg-[#0F172A] relative">
-          <div className="max-w-4xl mx-auto bg-[#F8FAFC] dark:bg-[#1E293B] rounded-lg shadow-sm border border-gray-100 dark:border-white/6 p-6 md:p-10">
+          <div className="max-w-4xl mx-auto bg-[#F8FAFC] dark:bg-[#1E293B] rounded-lg shadow-sm border border-gray-100 dark:border-white/6 p-6 md:p-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-semibold text-[#0A192F] dark:text-white mb-1">Simulador Rápido</h2>
               <p className="text-sm text-gray-400 dark:text-gray-500">Calcula tu cuota en segundos</p>

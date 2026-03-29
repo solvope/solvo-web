@@ -1,15 +1,23 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useTheme } from 'next-themes'
 import { Loader2, Zap, TrendingUp, Info } from 'lucide-react'
 import Link from 'next/link'
 import { simulate, type SimulationResult, type LoanProductType, type PaymentFrequency } from '../api/simulatorRepository'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 
 const MIN_AMOUNT = 200
 const MAX_AMOUNT = 500
-const STEP       = 25
+const STEP = 25
 
 function fmt(n: number) {
   return n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -18,12 +26,16 @@ function fmt(n: number) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function LoanSimulator() {
-  const [amount,    setAmount]    = useState(200)
-  const [product,   setProduct]   = useState<LoanProductType>('EXPRESS')
+  const [amount, setAmount] = useState(200)
+  const [product, setProduct] = useState<LoanProductType>('EXPRESS')
   const [frequency, setFrequency] = useState<PaymentFrequency>('MENSUAL')
-  const [result,    setResult]    = useState<SimulationResult | null>(null)
-  const [loading,   setLoading]   = useState(false)
-  const [error,     setError]     = useState<string | null>(null)
+  const [result, setResult] = useState<SimulationResult | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => setMounted(true), [])
 
   const runSimulation = useCallback(async () => {
     setLoading(true)
@@ -45,8 +57,13 @@ export function LoanSimulator() {
   }, [runSimulation])
 
   const numInstallments = product === 'EXPRESS' ? 1 : 2
-  const freqLabel       = frequency === 'MENSUAL' ? 'mensual' : 'quincenal'
-  const totalFees       = result
+  const freqLabel = frequency === 'MENSUAL' ? 'mensual' : 'quincenal'
+  const isDark = mounted && resolvedTheme === 'dark'
+  const fillColor = isDark ? '#D4AF37' : '#0A192F'
+  const trackColor = isDark ? 'rgba(255,255,255,0.12)' : '#E5E7EB'
+  const fillPct = ((amount - MIN_AMOUNT) / (MAX_AMOUNT - MIN_AMOUNT)) * 100
+  const rangeStyle = { background: `linear-gradient(to right, ${fillColor} ${fillPct}%, ${trackColor} ${fillPct}%)` }
+  const totalFees = result
     ? result.techFee + result.maintenanceFeeTotal + result.igvAmount
     : null
 
@@ -64,23 +81,23 @@ export function LoanSimulator() {
             </label>
             <div className="flex gap-4">
               <button
+                type="button"
                 onClick={() => setProduct('EXPRESS')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
-                  product === 'EXPRESS'
-                    ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#0A192F] dark:text-white'
-                    : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#00E5FF] hover:text-[#00E5FF]'
-                }`}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${product === 'EXPRESS'
+                  ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#0A192F] dark:text-white'
+                  : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#00E5FF] hover:text-[#00E5FF]'
+                  }`}
               >
                 <Zap className="h-4 w-4 text-[#00E5FF]" />
                 Express
               </button>
               <button
+                type="button"
                 onClick={() => setProduct('FLEX')}
-                className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
-                  product === 'FLEX'
-                    ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#0A192F] dark:text-white'
-                    : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#D4AF37] hover:text-[#D4AF37]'
-                }`}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold text-sm transition-all flex items-center justify-center gap-2 ${product === 'FLEX'
+                  ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#0A192F] dark:text-white'
+                  : 'border-gray-200 dark:border-[#334155] text-gray-500 hover:border-[#D4AF37] hover:text-[#D4AF37]'
+                  }`}
               >
                 <TrendingUp className="h-4 w-4" />
                 Flex
@@ -100,10 +117,32 @@ export function LoanSimulator() {
             </div>
             <input
               type="range"
+              title="Slider de monto"
               min={MIN_AMOUNT} max={MAX_AMOUNT} step={STEP}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[#0A192F] dark:accent-[#D4AF37]"
+              style={rangeStyle}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none
+                [&::-webkit-slider-thumb]:w-5
+                [&::-webkit-slider-thumb]:h-5
+                [&::-webkit-slider-thumb]:rounded-full
+                [&::-webkit-slider-thumb]:bg-[#0A192F]
+                dark:[&::-webkit-slider-thumb]:bg-[#D4AF37]
+                [&::-webkit-slider-thumb]:border-2
+                [&::-webkit-slider-thumb]:border-white
+                [&::-webkit-slider-thumb]:shadow-md
+                [&::-webkit-slider-thumb]:cursor-pointer
+                [&::-moz-range-thumb]:w-5
+                [&::-moz-range-thumb]:h-5
+                [&::-moz-range-thumb]:rounded-full
+                [&::-moz-range-thumb]:bg-[#0A192F]
+                dark:[&::-moz-range-thumb]:bg-[#D4AF37]
+                [&::-moz-range-thumb]:border-2
+                [&::-moz-range-thumb]:border-white
+                [&::-moz-range-thumb]:border-solid
+                [&::-moz-range-thumb]:shadow-md
+                [&::-moz-range-thumb]:cursor-pointer"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-2">
               <span>S/ {MIN_AMOUNT}</span>
@@ -114,37 +153,39 @@ export function LoanSimulator() {
           {/* Frecuencia + Cuotas */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <label htmlFor="frequency" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 Frecuencia
               </label>
-              <select
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value as PaymentFrequency)}
-                className="w-full bg-white dark:bg-[#0F172A] border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#00E5FF]"
-              >
-                <option value="QUINCENAL">Quincenal</option>
-                <option value="MENSUAL">Mensual</option>
-              </select>
+              <Select id="frequency" value={frequency} onValueChange={(val) => setFrequency(val as PaymentFrequency)}>
+                <SelectTrigger className="w-full h-10 rounded-md border-gray-200 dark:border-white/10 bg-white dark:bg-[#0F172A] text-gray-700 dark:text-white px-3 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="QUINCENAL">Quincenal</SelectItem>
+                  <SelectItem value="MENSUAL">Mensual</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <label htmlFor="numInstallments" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
                 Cuotas
               </label>
-              <select
-                disabled
-                value={numInstallments}
-                className="w-full bg-gray-100 dark:bg-[#0F172A] border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-xl px-4 py-3 opacity-70 cursor-not-allowed"
-              >
-                <option value={numInstallments}>
-                  {numInstallments} cuota{numInstallments > 1 ? 's' : ''}
-                </option>
-              </select>
+              <Select id="numInstallments" value={String(numInstallments)} disabled>
+                <SelectTrigger className="w-full h-10 rounded-md border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#0F172A] text-gray-500 dark:text-gray-400 px-3 text-sm opacity-70">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={String(numInstallments)}>
+                    {numInstallments} cuota{numInstallments > 1 ? 's' : ''}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
 
         {/* ── Summary Card (navy) ────────────────────────────────────── */}
-        <div className="bg-linear-to-br from-[#0A192F] to-[#0A192F]/90 dark:bg-[#0F172A] rounded-2xl p-6 sm:p-8 text-white flex flex-col justify-between shadow-lg relative overflow-hidden border border-gray-700/30">
+        <div className="bg-linear-to-br from-[#0A192F] to-[#0A192F]/90 dark:bg-[#0F172A] rounded-2xl p-6 sm:p-7 text-white flex flex-col justify-between shadow-lg relative overflow-hidden border border-gray-700/30">
 
           {/* Decorative corner */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-[#00E5FF]/20 to-transparent rounded-bl-full z-0" />

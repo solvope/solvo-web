@@ -10,7 +10,7 @@ import { loginSchema, type LoginInput } from '../lib/authSchemas'
 import { useAuthStore } from '../model/useAuthStore'
 
 const inputCls =
-  'w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[#0A192F] dark:text-[#F1F5F9] text-[0.95rem] placeholder-gray-400 dark:placeholder-[#64748B] focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] focus:ring-[3px] focus:ring-[#0A192F]/10 dark:focus:ring-[#D4AF37]/15 transition-all'
+  'w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[#0A192F] dark:text-[#F1F5F9] text-[0.95rem] placeholder-gray-400 dark:placeholder-[#64748B] focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] focus:ring-[3px] focus:ring-[#0A192F]/10 dark:focus:ring-[#D4AF37]/15 transition-all'
 
 export function LoginForm() {
   const router = useRouter()
@@ -99,7 +99,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-4 rounded-xl bg-[#0A192F] text-[#D4AF37] font-bold text-base hover:bg-[#112240] hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl bg-[#0A192F] text-[#D4AF37] cursor-pointer font-bold text-base hover:bg-[#112240] hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 transition-all flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <><Loader2 className="h-4 w-4 animate-spin" /> Iniciando sesión...</>

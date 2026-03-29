@@ -6,16 +6,16 @@ import { useAuthStore } from '@/features/auth'
 import { useNotificationStore } from '@/features/notifications'
 
 const NAV_LINKS = [
-  { href: '/dashboard',  label: 'Inicio',       icon: LayoutDashboard },
-  { href: '/loans',      label: 'Préstamos',     icon: CreditCard },
-  { href: '/kyc',        label: 'Verificación',  icon: FileText },
-  { href: '/profile',    label: 'Perfil',        icon: User },
+  { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
+  { href: '/loans', label: 'Préstamos', icon: CreditCard },
+  { href: '/kyc', label: 'Verificación', icon: FileText },
+  { href: '/profile', label: 'Perfil', icon: User },
 ]
 
 export function Navbar() {
-  const pathname     = usePathname()
+  const pathname = usePathname()
   const { user, logout } = useAuthStore()
-  const { unreadCount }  = useNotificationStore()
+  const { unreadCount } = useNotificationStore()
 
   return (
     <>

@@ -10,7 +10,7 @@ interface Props {
 
 export function LoanCard({ loan }: Readonly<Props>) {
   const isOverdue = loan.status === 'OVERDUE'
-  const isActive  = loan.status === 'ACTIVE' || isOverdue
+  const isActive = loan.status === 'ACTIVE' || isOverdue
 
   return (
     <Link href={`/loans/${loan.id}`}>

@@ -9,12 +9,12 @@ import { Loader2, ArrowRight } from 'lucide-react'
 import { useLoanStore, loanRepository, type SimulationResult } from '@/features/request-loan'
 import { kycRepository } from '@/features/upload-kyc'
 import { useAuthStore } from '@/features/auth'
-import { formatCurrency } from '@/shared/lib/utils'
+import { formatCurrency, shortName } from '@/shared/lib/utils'
 import { InfoTooltip } from '@/shared/ui/info-tooltip'
 import Link from 'next/link'
 
-const cardCls = 'bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/[0.06] rounded-lg'
-const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/[0.06] bg-[#F9FAFB] dark:bg-[#0F172A] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/20 transition-all text-sm placeholder-gray-400 dark:placeholder-gray-500'
+const cardCls = 'bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 rounded-lg'
+const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/6 bg-[#F9FAFB] dark:bg-[#0F172A] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/20 transition-all text-sm placeholder-gray-400 dark:placeholder-gray-500'
 
 const TOOLTIPS = {
   techFee: 'Cubre los costos de la plataforma digital, verificación de identidad y procesamiento de tu solicitud.',
@@ -141,7 +141,7 @@ export default function RequestLoanPage() {
 
             {/* Product selection */}
             <div className={cardCls}>
-              <div className="p-6 border-b border-gray-100 dark:border-white/[0.06]">
+              <div className="p-6 border-b border-gray-100 dark:border-white/6">
                 <h2 className="text-lg font-semibold text-[#0A192F] dark:text-white">Elige tu modalidad</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Selecciona la opción que mejor se ajuste a ti</p>
               </div>
@@ -154,8 +154,8 @@ export default function RequestLoanPage() {
                       type="button"
                       onClick={() => form.setValue('productType', p.value as 'EXPRESS' | 'FLEX')}
                       className={`p-5 rounded-lg border-2 text-left transition-all ${selected
-                          ? 'border-[#D4AF37] bg-[#D4AF37]/5 dark:bg-[#D4AF37]/10'
-                          : 'border-gray-100 dark:border-white/[0.06] hover:border-gray-300 dark:hover:border-gray-500'
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/5 dark:bg-[#D4AF37]/10'
+                        : 'border-gray-100 dark:border-white/6 hover:border-gray-300 dark:hover:border-gray-500'
                         }`}
                     >
                       <div className="flex items-center gap-3 mb-3">
@@ -177,7 +177,7 @@ export default function RequestLoanPage() {
 
             {/* Amount */}
             <div className={cardCls}>
-              <div className="p-6 border-b border-gray-100 dark:border-white/[0.06]">
+              <div className="p-6 border-b border-gray-100 dark:border-white/6">
                 <h2 className="text-lg font-semibold text-[#0A192F] dark:text-white">¿Cuánto necesitas?</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Mínimo S/ 200 · Máximo S/ 2,000</p>
               </div>
@@ -204,8 +204,8 @@ export default function RequestLoanPage() {
                       type="button"
                       onClick={() => form.setValue('amount', v)}
                       className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all ${amount === v
-                          ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#0A192F] dark:text-[#D4AF37]'
-                          : 'border-gray-100 dark:border-white/[0.06] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A]'
+                        ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#0A192F] dark:text-[#D4AF37]'
+                        : 'border-gray-100 dark:border-white/6 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0F172A]'
                         }`}
                     >
                       {v >= 1000 ? `${v / 1000}k` : v}
@@ -217,7 +217,7 @@ export default function RequestLoanPage() {
 
             {/* Personal info (read-only) */}
             <div className={cardCls}>
-              <div className="p-6 border-b border-gray-100 dark:border-white/[0.06]">
+              <div className="p-6 border-b border-gray-100 dark:border-white/6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-[#0A192F] dark:text-white">Datos del solicitante</h2>
@@ -231,7 +231,7 @@ export default function RequestLoanPage() {
               {user && (
                 <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
-                    { label: 'Nombre completo', value: `${user.firstName} ${user.lastName}` },
+                    { label: 'Nombre', value: shortName(user.firstName, user.lastName) },
                     { label: 'Correo electrónico', value: user.email },
                   ].map(f => (
                     <div key={f.label}>
@@ -247,7 +247,7 @@ export default function RequestLoanPage() {
           {/* Right: simulation summary */}
           <div className="lg:col-span-2">
             <div className={`${cardCls} sticky top-8`}>
-              <div className="p-6 border-b border-gray-100 dark:border-white/[0.06]">
+              <div className="p-6 border-b border-gray-100 dark:border-white/6">
                 <h2 className="text-lg font-semibold text-[#0A192F] dark:text-white">Resumen del préstamo</h2>
               </div>
               <div className="p-6">
@@ -281,7 +281,7 @@ export default function RequestLoanPage() {
                     </div>
 
                     {/* Total */}
-                    <div className="flex justify-between font-bold border-t border-gray-100 dark:border-white/[0.06] pt-3">
+                    <div className="flex justify-between font-bold border-t border-gray-100 dark:border-white/6 pt-3">
                       <span className="text-[#0A192F] dark:text-white">Total a devolver</span>
                       <span className="text-[#0A192F] dark:text-[#D4AF37] text-base">{formatCurrency(simulation.totalAmount)}</span>
                     </div>
@@ -320,7 +320,7 @@ export default function RequestLoanPage() {
                         <span className="flex items-center gap-1">IGV (18%) <InfoTooltip text={TOOLTIPS.igv} /></span>
                         <span>{formatCurrency(simulation.igvAmount)}</span>
                       </div>
-                      <div className="flex justify-between border-t border-gray-100 dark:border-white/[0.06] pt-1.5 font-medium text-gray-600 dark:text-gray-300">
+                      <div className="flex justify-between border-t border-gray-100 dark:border-white/6 pt-1.5 font-medium text-gray-600 dark:text-gray-300">
                         <span className="flex items-center gap-1">TCEA <InfoTooltip text={TOOLTIPS.tcea} /></span>
                         <span>{simulation.tceaPercent}% anual</span>
                       </div>

@@ -35,3 +35,10 @@ export function formatRelativeDate(date: string | Date): string {
 export function calculateTotalWithInterest(amount: number, termDays: number, tea = 0.18): number {
   return amount * (1 + (tea / 365) * termDays)
 }
+
+/** Returns "PrimerNombre PrimerApellido" — trims compound names. */
+export function shortName(firstName: string, lastName: string): string {
+  const first = firstName.trim().split(/\s+/)[0] ?? firstName
+  const last  = lastName.trim().split(/\s+/)[0]  ?? lastName
+  return `${first} ${last}`
+}

@@ -209,7 +209,7 @@ export default function ResetPasswordPage() {
     <div className="bg-[#F8FAFC] dark:bg-[#0F172A] min-h-screen flex flex-col text-gray-800 dark:text-[#F1F5F9] antialiased overflow-x-hidden relative transition-colors duration-300">
       <AuthHeader />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex items-center justify-center min-h-screen">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10 flex items-center justify-center min-h-screen">
         <div className="w-full max-w-250 flex flex-col lg:flex-row bg-white dark:bg-[#1E293B] rounded-lg shadow-sm overflow-hidden border border-gray-100 dark:border-white/6 min-h-[560px]">
 
           {/* ── Left Hero ─────────────────────────────────────────────── */}

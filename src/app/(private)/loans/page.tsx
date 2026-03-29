@@ -4,6 +4,13 @@ import Link from 'next/link'
 import { useLoanStore } from '@/features/request-loan'
 import { formatCurrency, formatDate } from '@/shared/lib/utils'
 import type { Loan } from '@/entities/loan'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const cardCls = 'bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 rounded-lg'
 
@@ -257,19 +264,18 @@ export default function LoansPage() {
                 className="w-full bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-white/6 rounded-xl py-2.5 pl-10 pr-4 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#D4AF37] transition-colors text-sm placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
-            <div className="relative w-full sm:w-48">
-              <select
-                value={sort}
-                onChange={e => setSort(e.target.value as Sort)}
-                className="w-full appearance-none bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-white/6 rounded-xl py-2.5 px-4 text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#D4AF37] transition-colors text-sm pr-8"
-                title="Opciones"
-              >
-                <option value="recent">Más recientes</option>
-                <option value="amount_high">Monto mayor</option>
-                <option value="amount_low">Monto menor</option>
-                <option value="due_soon">Próximo a vencer</option>
-              </select>
-              <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs" />
+            <div className="w-full sm:w-48">
+              <Select value={sort} onValueChange={(val) => setSort(val as Sort)}>
+                <SelectTrigger className="w-full py-2.5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Más recientes</SelectItem>
+                  <SelectItem value="amount_high">Monto mayor</SelectItem>
+                  <SelectItem value="amount_low">Monto menor</SelectItem>
+                  <SelectItem value="due_soon">Próximo a vencer</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

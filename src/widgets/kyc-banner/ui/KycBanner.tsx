@@ -5,7 +5,7 @@ export function KycBanner() {
   return (
     <div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
       {/* Subtle glow */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-amber-500/5 to-transparent" />
 
       <div className="relative flex items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/20">

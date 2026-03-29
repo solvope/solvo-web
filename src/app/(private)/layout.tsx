@@ -32,16 +32,16 @@ export default function PrivateLayout({ children }: Readonly<{ children: React.R
       <DashboardSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Mobile Header */}
-      <header className="lg:hidden w-full py-4 px-6 flex justify-between items-center bg-[#0A192F] border-b border-white/5 sticky top-0 z-30">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-linear-to-br from-[#D4AF37] to-[#D4AF37]/80 rounded-lg flex items-center justify-center shadow-sm">
-            <i className="fa-solid fa-bolt text-[#0A192F]" />
+      <header className="lg:hidden w-full py-3.5 px-5 flex justify-between items-center bg-[#0A192F] border-b border-white/5 sticky top-0 z-30">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 bg-linear-to-br from-[#D4AF37] to-[#D4AF37]/80 rounded-lg flex items-center justify-center">
+            <i className="fa-solid fa-bolt text-[#0A192F] text-xs" />
           </div>
-          <span className="text-xl font-bold text-white tracking-tight">Solvo</span>
+          <span className="text-base font-semibold text-white tracking-tight">Solvo</span>
         </div>
         <button
           onClick={() => setSidebarOpen(true)}
-          className="text-white text-2xl focus:outline-none p-1"
+          className="text-gray-300 hover:text-white text-lg focus:outline-none p-1 transition-colors"
           aria-label="Abrir menú"
         >
           <i className="fa-solid fa-bars" />
@@ -49,7 +49,7 @@ export default function PrivateLayout({ children }: Readonly<{ children: React.R
       </header>
 
       {/* Main content */}
-      <main className="lg:ml-[280px] min-h-screen">
+      <main className="lg:ml-64 min-h-screen">
         <div className="max-w-[1366px] mx-auto p-6 lg:p-10">
           {children}
         </div>

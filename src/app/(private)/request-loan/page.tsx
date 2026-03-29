@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Loader2, ArrowRight } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useTheme } from 'next-themes'
 import { useLoanStore, loanRepository, type SimulationResult } from '@/features/request-loan'
 import { kycRepository } from '@/features/upload-kyc'
@@ -22,7 +23,7 @@ import {
 import Link from 'next/link'
 
 const cardCls = 'bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-white/6 rounded-lg'
-const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/6 bg-[#F9FAFB] dark:bg-[#0F172A] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/20 transition-all text-sm placeholder-gray-400 dark:placeholder-gray-500'
+const inputCls = 'w-full px-4 py-2.5 rounded-lg border border-gray-100 dark:border-white/6 bg-[#F9FAFB] dark:bg-[#0F172A] text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/20 transition-all text-sm placeholder-gray-400 dark:placeholder-gray-500'
 
 const TOOLTIPS = {
   techFee: 'Cubre los costos de la plataforma digital, verificación de identidad y procesamiento de tu solicitud.',
@@ -303,11 +304,10 @@ export default function RequestLoanPage() {
                           key={key}
                           type="button"
                           onClick={() => handleProductChange(key)}
-                          className={`flex-1 py-2.5 px-3 rounded-xl border-2 font-semibold text-sm transition-all flex flex-col items-center justify-center gap-1 ${
-                            selected
+                          className={`flex-1 py-2.5 px-3 rounded-xl border-2 font-semibold text-sm transition-all flex flex-col items-center justify-center gap-1 ${selected
                               ? `${p.borderActive} ${p.accentBg} text-[#0A192F] dark:text-white`
                               : 'border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/20'
-                          }`}
+                            }`}
                         >
                           <i className={`${p.icon} text-sm ${selected ? p.textActive : ''}`} />
                           <span className="text-xs font-semibold">{p.label}</span>
@@ -382,10 +382,14 @@ export default function RequestLoanPage() {
                   <div>
                     <label className="block text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Banco</label>
                     {/* TODO: connect bank to API submission */}
-                    <select value={bank} onChange={e => setBank(e.target.value)} className={inputCls}>
-                      <option value="">Seleccione su banco</option>
-                      {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                    </select>
+                    <Select value={bank} onValueChange={v => setBank(v ?? '')}>
+                      <SelectTrigger className="w-full py-2.5">
+                        <SelectValue placeholder="Seleccione su banco" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BANKS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">CCI (20 dígitos)</label>
@@ -409,22 +413,20 @@ export default function RequestLoanPage() {
               <div className="p-6">
                 <div className="space-y-4 mb-6">
                   <label className="flex items-start gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={consentCredit}
-                      onChange={e => setConsentCredit(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#0A192F] dark:accent-[#D4AF37] shrink-0 cursor-pointer"
+                      onCheckedChange={checked => setConsentCredit(checked)}
+                      className="mt-0.5"
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                       Autorizo a Solvo a consultar mi historial crediticio en las Centrales de Riesgo (Equifax/Sentinel) conforme a la normativa SBS para evaluar esta solicitud.
                     </span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={consentTerms}
-                      onChange={e => setConsentTerms(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#0A192F] dark:accent-[#D4AF37] shrink-0 cursor-pointer"
+                      onCheckedChange={checked => setConsentTerms(checked)}
+                      className="mt-0.5"
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                       Acepto los{' '}

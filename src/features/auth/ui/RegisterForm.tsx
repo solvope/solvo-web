@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { registerSchema, type RegisterInput } from '../lib/authSchemas'
 import { useAuthStore } from '../model/useAuthStore'
 
@@ -177,11 +178,7 @@ export function RegisterForm() {
 
       {/* Terms */}
       <div className="flex items-start gap-3 pt-1">
-        <input
-          type="checkbox"
-          id="terms"
-          className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-[#334155] accent-[#0A192F] dark:accent-[#D4AF37] cursor-pointer shrink-0"
-        />
+        <Checkbox id="terms" className="mt-0.5" />
         <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400 leading-tight cursor-pointer">
           He leído y acepto los{' '}
           <a href="#" className="text-[#0A192F] dark:text-[#D4AF37] hover:underline font-medium">Términos y Condiciones</a>,
@@ -196,7 +193,7 @@ export function RegisterForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3.5 bg-[#0A192F] hover:bg-[#112240] hover:opacity-90 text-white font-semibold rounded-xl transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full py-3 cursor-pointer bg-[#0A192F] hover:bg-[#112240] hover:opacity-90 text-white font-semibold rounded-lg transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <><Loader2 className="h-4 w-4 animate-spin" /> Creando cuenta...</>

@@ -6,11 +6,12 @@ import { toast } from 'sonner'
 import { useState } from 'react'
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { loginSchema, type LoginInput } from '../lib/authSchemas'
 import { useAuthStore } from '../model/useAuthStore'
 
 const inputCls =
-  'w-full px-5 py-3 rounded-xl border border-gray-200 dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[#0A192F] dark:text-[#F1F5F9] text-[0.95rem] placeholder-gray-400 dark:placeholder-[#64748B] focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] focus:ring-[3px] focus:ring-[#0A192F]/10 dark:focus:ring-[#D4AF37]/15 transition-all'
+  'w-full px-5 py-3 rounded-lg border border-gray-200 dark:border-[#334155] bg-white dark:bg-[#0F172A] text-[#0A192F] dark:text-[#F1F5F9] text-[0.95rem] placeholder-gray-400 dark:placeholder-[#64748B] focus:outline-none focus:border-[#0A192F] dark:focus:border-[#D4AF37] focus:ring-[3px] focus:ring-[#0A192F]/10 dark:focus:ring-[#D4AF37]/15 transition-all'
 
 export function LoginForm() {
   const router = useRouter()
@@ -80,10 +81,7 @@ export function LoginForm() {
       {/* Remember + Forgot */}
       <div className="flex items-center justify-between pt-1">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            className="w-4 h-4 rounded border-gray-300 dark:border-[#334155] accent-[#0A192F] dark:accent-[#D4AF37] cursor-pointer"
-          />
+          <Checkbox />
           <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">Recordarme</span>
         </label>
         <Link
@@ -99,7 +97,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3 rounded-xl bg-[#0A192F] text-[#D4AF37] cursor-pointer font-bold text-base hover:bg-[#112240] hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 cursor-pointer rounded-lg bg-[#0A192F] text-[#D4AF37] font-bold text-base hover:bg-[#112240] hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 transition-all flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <><Loader2 className="h-4 w-4 animate-spin" /> Iniciando sesión...</>

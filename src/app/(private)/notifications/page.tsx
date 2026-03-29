@@ -27,6 +27,7 @@ export default function NotificationsPage() {
         </div>
         {unreadCount > 0 && (
           <button
+            type="button"
             onClick={markAllAsRead}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-100 dark:border-white/6 text-gray-500 dark:text-gray-400 font-medium text-sm hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-colors"
           >
